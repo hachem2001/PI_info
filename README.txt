@@ -2,7 +2,7 @@ This is intended for my partner in PI Majd ABID
 
 The libraries we use are :
 	ctime to estimate CPU times.
-	list for double-linked lists because we use lists to represent the graphs
+	STL's list library for double-linked lists because we use lists to represent the graphs
 
 To configure CMake, you should so cmake -S . -B bin
 That'll create the bin foler.
