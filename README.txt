@@ -7,4 +7,5 @@ The libraries we use are :
 To configure CMake, you should so cmake -S . -B bin
 That'll create the bin foler.
 
-To build : run cmake --build bin
+To initialise : while in the topmost directory, execute "cmake -S . -B bin"
+To build : run "cmake --build bin"
