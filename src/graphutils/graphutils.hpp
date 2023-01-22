@@ -8,6 +8,8 @@ namespace Graphutils {
 	struct graph {
 		std::vector<std::list<int>> adjs;
 	};
+
+	graph empty_graph();
 	std::ostream &operator<<(std::ostream &os, graph const &m);
 }
 
