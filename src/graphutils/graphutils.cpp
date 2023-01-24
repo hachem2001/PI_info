@@ -90,6 +90,7 @@ namespace Graphutils
     
     // Insert both.
     std::list<cell> &adj1 = g.info.at(vertex1).second, &adj2 = g.info.at(vertex2).second;
+    //std::cout << "the program has passed by here!" << std::endl;
 
     std::list<cell>::iterator it1, it2;
     if (adj1.size() == 0){
@@ -97,11 +98,11 @@ namespace Graphutils
       it1 = adj1.begin();
     } else {
       it1 = adj1.begin();
-      while (it1->weight < weight){
+      while (it1!=adj1.end() && it1->weight < weight){
         it1++;
       }
-      adj1.insert(it1, c1);
-      it1--;
+      it1 = adj1.insert(it1, c1);
+      c2._p = it1;
     }
 
     if (adj2.size() == 0){
@@ -109,14 +110,11 @@ namespace Graphutils
       it2 = adj2.begin();
     } else {
       std::list<cell>::iterator it2 = adj2.begin();
-      while (it2->weight < weight) {
+      while (it2!=adj2.end() && it2->weight < weight) {
         it2++;
       }
-      adj2.insert(it2, c2);
-      it2--;
+      it2 = adj2.insert(it2, c2);
+      c1._p = it2;
     }
-
-    it1->_p = it2; // The linkage is here.
-    it2->_p = it1;
   }
 }
