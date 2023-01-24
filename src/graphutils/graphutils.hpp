@@ -39,6 +39,12 @@ namespace Graphutils {
 	/// @param g Graph
 	int add_vertex(graph& g);
 
+	/// @brief Adds a vertex with the specified index. Returns the same number of the index.
+	/// @param g Graph
+	/// @param index Index to create
+	/// @return 
+	int add_vertex(graph& g, int index);
+
 	/// @brief Overload : adds n vertices to the graph g
 	/// @param g Graph
 	/// @param n number of vertices to add
@@ -83,10 +89,10 @@ namespace Graphutils {
 	void remove_edge(graph& g, int vertex1, int vertex2);
 
 	/// @brief Adds the vertices if they are missing, and connect them with the cost weight.
-	/// @param g 
-	/// @param vertex1 
-	/// @param vertex2 
-	/// @param weight 
+	/// @param g Graph
+	/// @param vertex1 Vertex 1
+	/// @param vertex2 Vertex 2
+	/// @param weight Weight
 	void add_link(graph& g, int vertex1, int vertex2, double weight);
 
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)

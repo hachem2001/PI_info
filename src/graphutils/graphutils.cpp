@@ -51,6 +51,20 @@ namespace Graphutils
     return g.number_of_vertices;
   }
   
+  int add_vertex(graph& g, int index)
+  {
+    if (g.info.count(index) == 0) {
+      if (index >= g._number_of_created_vertices) {
+        g._number_of_created_vertices = index+1;
+        // Make sure any newly added vertices with the other functions have a unique index using this trick.
+      }
+      label l;
+      std::list<cell> empty_adjacency_list;
+      g.info.emplace(index, std::pair<label, std::list<cell>>(l, empty_adjacency_list));
+    }
+    return index;
+  }
+
   int add_vertices(graph& g, int n)
   {
     int first_index = add_vertex(g);
@@ -59,7 +73,7 @@ namespace Graphutils
     }
     return first_index;
   }
-  
+
   void disconnect_vertex(graph& g, int vertex)
   {
     std::list<cell> &neighs = g.info.at(vertex).second; // List of all the neigbours to vertex
@@ -121,14 +135,25 @@ namespace Graphutils
   
   std::pair<bool, std::list<cell>::iterator> get_edge(graph& g, int vertex1, int vertex2)
   {
-    std::list<cell> &adj1 = g.info.at(vertex1).second;
+    if (!(g.info.count(vertex1)==0 || g.info.count(vertex2)==0)) {
+      std::list<cell> &adj1 = g.info.at(vertex1).second;
 
-    for (std::list<cell>::iterator it = adj1.begin(); it!=adj1.end(); it++) {
-      if (it->vertex == vertex2) {
-        return std::pair<bool, std::list<cell>::iterator>(true, it);
+      for (std::list<cell>::iterator it = adj1.begin(); it!=adj1.end(); it++) {
+        if (it->vertex == vertex2) {
+          return std::pair<bool, std::list<cell>::iterator>(true, it);
+        }
       }
     }
-    return std::pair<bool, std::list<cell>::iterator>(false, adj1.begin());
+    return std::pair<bool, std::list<cell>::iterator>(false, std::list<cell>::iterator());
+  }
+  
+  std::pair<bool, double> get_weight(graph& g, int vertex1, int vertex2)
+  {
+    std::pair<bool, std::list<cell>::iterator> s = get_edge(g, vertex1, vertex2);
+    if (s.first == true) {
+      return std::pair<bool, double>(true, s.second->weight);
+    }
+    return std::pair<bool, double>(false, -1);
   }
   
   void remove_edge(graph& g, int vertex1, int vertex2)
@@ -136,11 +161,21 @@ namespace Graphutils
     std::list<cell> &adj1 = g.info.at(vertex1).second;
     std::list<cell> &adj2 = g.info.at(vertex2).second;
 
-    for (std::list<cell>::const_iterator it = adj1.begin(); it!=adj1.end(); it++) {
-      if (it->vertex == vertex2) {
-        
-        return;
+    
+    for (std::list<cell>::iterator it = adj1.begin(); it!=adj1.end(); it++) {
+      if (it->vertex == vertex2) { // First first cell leading to vertex2 from vertex1
+        adj2.erase(it->_p); // Erase the corresponding link from vertex 2's adjacency list
+        adj1.erase(it); // Erase the link from vertex 1's adjacency list
+        return; // Or break;
       }
     }
+  }
+  
+  void add_link(graph& g, int vertex1, int vertex2, double weight)
+  {
+    add_vertex(g, vertex1); // If the vertex already exists : it won't do anything 
+    add_vertex(g, vertex2); // Same thing.
+
+    add_edge(g, vertex1, vertex2, weight);
   }
 }
