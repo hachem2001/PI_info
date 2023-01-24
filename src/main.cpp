@@ -14,7 +14,17 @@ int main(int argc, char *argv[])
 	add_edge(g, 4, 1, 2.1);
 	add_edge(g, 1, 3, 1.1);
 	add_edge(g, 3, 2, 1.2);
+	std::cout << g << std::endl;
+	
+	add_edge(g, 3, 4, 1.2);
+	std::cout << g << std::endl;
 
+	std::cout << "Disconnecting 3" << std::endl;
+	disconnect_vertex(g, 3);
+	std::cout << g << std::endl;
+
+	std::cout << "Removing vertex 3" << std::endl;
+	remove_vertex(g, 3);
 	std::cout << g << std::endl;
 	return 0;
 }

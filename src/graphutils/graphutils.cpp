@@ -29,7 +29,7 @@ namespace Graphutils
       std::list<cell> adj = it->second.second;
       os << it->first << ":" << adj << std::endl;
     }
-    os << m.info.size() - 1 << ":" << m.info.end()->second.second;
+
     return os;
   }
 
@@ -62,13 +62,15 @@ namespace Graphutils
   
   void disconnect_vertex(graph& g, int vertex)
   {
-    std::list<cell> neighs = g.info.at(vertex).second; // List of all the neigbours to vertex
-    while (neighs.size() >0) {
+    std::list<cell> &neighs = g.info.at(vertex).second; // List of all the neigbours to vertex
+    while (neighs.size() > 0) {
       // Remove each connection from both the vertex's list and the list of the element in question
       cell a = neighs.front();
-      std::list<cell>::iterator corresponding_cell = a._p;
+      std::list<cell>::iterator &corresponding_cell = a._p;
 
-      g.info.at(a.vertex).second.erase(a._p);
+      //std::list<cell> &corresponding_neighs = g.info.at(a.vertex).second;
+      std::cout << "Passed by here " << corresponding_cell->vertex;
+      //corresponding_neighs.erase(corresponding_cell);
       neighs.pop_front();
     }
   }
@@ -90,11 +92,10 @@ namespace Graphutils
     
     // Insert both.
     std::list<cell> &adj1 = g.info.at(vertex1).second, &adj2 = g.info.at(vertex2).second;
-    //std::cout << "the program has passed by here!" << std::endl;
 
     std::list<cell>::iterator it1, it2;
     if (adj1.size() == 0){
-      adj1.emplace_front(c1);
+      adj1.push_front(c1);
       it1 = adj1.begin();
     } else {
       it1 = adj1.begin();
@@ -102,19 +103,19 @@ namespace Graphutils
         it1++;
       }
       it1 = adj1.insert(it1, c1);
-      c2._p = it1;
     }
+    c2._p = it1;
 
     if (adj2.size() == 0){
       adj2.emplace_front(c2);
       it2 = adj2.begin();
     } else {
-      std::list<cell>::iterator it2 = adj2.begin();
+      it2 = adj2.begin();
       while (it2!=adj2.end() && it2->weight < weight) {
         it2++;
       }
       it2 = adj2.insert(it2, c2);
-      c1._p = it2;
     }
+    it1->_p = it2;
   }
 }
