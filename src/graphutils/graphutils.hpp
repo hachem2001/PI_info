@@ -8,12 +8,12 @@
 namespace Graphutils {
 
 	/// @brief This is an intermediary definition used to make working with graph adjacency lists easier.
-	struct cell  {
+	struct cell {
 		int vertex;
 		double weight;
 		std::list<cell>::iterator _p; // Points to the cell from vertex's adjacency lists that points to this cell as well.
 	};
-	
+
 	/// @brief This is a label attached to a vertex. It could be the name of a city, a number, ...
 	struct label {
 		int index; // For the moment we just keep a number, and identify it to the index of creation of the graph, which should be unique
@@ -23,7 +23,7 @@ namespace Graphutils {
 	/// The index of the adjacent point, the weight connecting them, and a pointer to the triplet {x,w,p'} from y's adjacency list.
 	/// The lists being double-linked, this would mean our deleting a link would be -slightly- faster.
 	struct graph {
-		int _number_of_created_vertices = 0; 
+		int _number_of_created_vertices = 0;
 		int number_of_vertices = 0;
 		int number_of_edges = 0;
 		std::map<int, std::pair<label, std::list<cell>>> info;
@@ -36,9 +36,9 @@ namespace Graphutils {
 	graph empty_graph();
 
 	/// @brief Adds a vertex. Returns the number corresponding to the vertex
-	/// @param g 
+	/// @param g Graph
 	int add_vertex(graph& g);
-	
+
 	/// @brief Overload : adds n vertices to the graph g
 	/// @param g Graph
 	/// @param n number of vertices to add
@@ -54,14 +54,28 @@ namespace Graphutils {
 	/// @param g Graph
 	/// @param vertex Vertex number (from 0 to number_of_vertices-1)
 	void remove_vertex(graph& g, int vertex);
-	
+
 	/// @brief Adds an edge to the Graph g linking vertex1 and vertex2 with the cost weight 
 	/// @param g Graph
 	/// @param vertex1 First vertex
 	/// @param vertex2 Second vertex
 	/// @param weight Weight between both vertices.
 	void add_edge(graph& g, int vertex1, int vertex2, double weight);
-	/*
+
+	/// @brief Gets the cell link from vertex1 to vertex2
+	/// @param g Graph
+	/// @param vertex1 First vertex
+	/// @param vertex2 Second vertex
+	/// @return <true, cell linking 1 to 2> if an edge exists, <false, empty cell> otherwise
+	std::pair<bool, std::list<cell>::iterator> get_edge(graph& g, int vertex1, int vertex2);
+
+	/// @brief Gets the weight from vertex 1 to vertex 2. 
+	/// @param g Graph
+	/// @param vertex1 First vertex
+	/// @param vertex2 Second vertex
+	/// @return Returns <true, weight> if edge exists. <false, -1> otherwise.
+	std::pair<bool, double> get_weight(graph& g, int vertex1, int vertex2);
+
 	/// @brief Removes the edge (vertex1,vertex2) from the graph
 	/// @param g Graph
 	/// @param vertex1 First vertex
@@ -74,11 +88,11 @@ namespace Graphutils {
 	/// @param vertex2 
 	/// @param weight 
 	void add_link(graph& g, int vertex1, int vertex2, double weight);
-	*/
+
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
 	/// @param m The graph to print
 	/// @return Output stream.
-	std::ostream &operator<<(std::ostream &os, graph const &m);
+	std::ostream& operator<<(std::ostream& os, graph const& m);
 }
 

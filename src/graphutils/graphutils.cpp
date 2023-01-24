@@ -118,4 +118,29 @@ namespace Graphutils
     }
     it1->_p = it2;
   }
+  
+  std::pair<bool, std::list<cell>::iterator> get_edge(graph& g, int vertex1, int vertex2)
+  {
+    std::list<cell> &adj1 = g.info.at(vertex1).second;
+
+    for (std::list<cell>::iterator it = adj1.begin(); it!=adj1.end(); it++) {
+      if (it->vertex == vertex2) {
+        return std::pair<bool, std::list<cell>::iterator>(true, it);
+      }
+    }
+    return std::pair<bool, std::list<cell>::iterator>(false, adj1.begin());
+  }
+  
+  void remove_edge(graph& g, int vertex1, int vertex2)
+  {
+    std::list<cell> &adj1 = g.info.at(vertex1).second;
+    std::list<cell> &adj2 = g.info.at(vertex2).second;
+
+    for (std::list<cell>::const_iterator it = adj1.begin(); it!=adj1.end(); it++) {
+      if (it->vertex == vertex2) {
+        
+        return;
+      }
+    }
+  }
 }
