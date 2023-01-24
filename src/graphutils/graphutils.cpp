@@ -15,9 +15,9 @@ namespace Graphutils
       os << "[";
       for (auto it = neighs.begin(); it != before_last; it++) {
         cell neighbour = *it;
-        os << "(" << neighbour.vertex << "," << neighbour.weight << ")" << ";";
+        os << "(" << neighbour.vertex << ", " << neighbour.weight << ")" << ";";
       }
-      os << "(" << neighs.back().vertex << "," << neighs.back().weight << ")" << "]";
+      os << "(" << neighs.back().vertex << ", " << neighs.back().weight << ")" << "]";
     }
 
     return os;
@@ -29,7 +29,7 @@ namespace Graphutils
       std::list<cell> adj = it->second.second;
       os << it->first << ":" << adj << std::endl;
     }
-    os << m.info.size() - 1 << ":" << m.info[m.info.size() - 1].second;
+    os << m.info.size() - 1 << ":" << m.info.end()->second.second;
     return os;
   }
 
@@ -47,8 +47,17 @@ namespace Graphutils
     g.number_of_vertices++;
     label l; l.index=g._number_of_created_vertices;
     std::list<cell> empty_adjacency_list;
-    g.info.emplace(l, empty_adjacency_list); //(std::pair<label, std::list<cell>>(l, empty_adjacency_list));
+    g.info.emplace(g.number_of_vertices-1, std::pair<label, std::list<cell>>(l, empty_adjacency_list)); //(std::pair<label, std::list<cell>>(l, empty_adjacency_list));
     return g.number_of_vertices;
+  }
+  
+  int add_vertices(graph& g, int n)
+  {
+    int first_index = add_vertex(g);
+    for (int i=0; i<n-1; i++){
+      add_vertex(g);
+    }
+    return first_index;
   }
   
   void disconnect_vertex(graph& g, int vertex)
@@ -80,19 +89,32 @@ namespace Graphutils
     c1.weight = c2.weight = weight;
     
     // Insert both.
-    std::list<cell>::iterator it1 = g.info.at(vertex1).second.begin();
-    while (it->weight < weight){
-      it++;
-    }
-    g.info.at(vertex1).second.insert(it, c1);
-    it1--;
+    std::list<cell> &adj1 = g.info.at(vertex1).second, &adj2 = g.info.at(vertex2).second;
 
-    std::list<cell>::iterator it2 = g.info.at(vertex2).second.begin();
-    while (it->weight < weight) {
-      it2++;
+    std::list<cell>::iterator it1, it2;
+    if (adj1.size() == 0){
+      adj1.emplace_front(c1);
+      it1 = adj1.begin();
+    } else {
+      it1 = adj1.begin();
+      while (it1->weight < weight){
+        it1++;
+      }
+      adj1.insert(it1, c1);
+      it1--;
     }
-    g.info.at(vertex2).second.insert(it, c1);
-    it2--;
+
+    if (adj2.size() == 0){
+      adj2.emplace_front(c2);
+      it2 = adj2.begin();
+    } else {
+      std::list<cell>::iterator it2 = adj2.begin();
+      while (it2->weight < weight) {
+        it2++;
+      }
+      adj2.insert(it2, c2);
+      it2--;
+    }
 
     it1->_p = it2; // The linkage is here.
     it2->_p = it1;

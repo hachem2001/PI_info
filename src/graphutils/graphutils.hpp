@@ -38,6 +38,12 @@ namespace Graphutils {
 	/// @brief Adds a vertex. Returns the number corresponding to the vertex
 	/// @param g 
 	int add_vertex(graph& g);
+	
+	/// @brief Overload : adds n vertices to the graph g
+	/// @param g Graph
+	/// @param n number of vertices to add
+	/// @return index of the first added vertex.
+	int add_vertices(graph& g, int n);
 
 	/// @brief Disconnects a vertex from the graph. It will therefore become connected to NO other vertex.
 	/// @param g Graph
