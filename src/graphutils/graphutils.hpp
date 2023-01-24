@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
-
+#include <map>
 
 
 namespace Graphutils {
@@ -11,7 +11,7 @@ namespace Graphutils {
 	struct cell  {
 		int vertex;
 		double weight;
-		void* _p; // Points to the cell from vertex's adjacency lists that points to this cell as well.
+		std::list<cell>::iterator _p; // Points to the cell from vertex's adjacency lists that points to this cell as well.
 	};
 	
 	/// @brief This is a label attached to a vertex. It could be the name of a city, a number, ...
@@ -26,9 +26,7 @@ namespace Graphutils {
 		int _number_of_created_vertices = 0; 
 		int number_of_vertices = 0;
 		int number_of_edges = 0;
-		std::vector<std::pair<label, std::list<cell>>> info; // For each vertex, we associate a list of (connected_vertex, weight).
-		// I use void* because a recursive definition of the types would be much more messy.
-		// We therefore try to be careful when verifying the integrity of the code.
+		std::map<int, std::pair<label, std::list<cell>>> info;
 		// For _number_of_created_vertices: this number goes up and never down, and does up when a new vertex is created.
 		// It is currently used to modify the label to keep it unique for each vertex.
 	};
@@ -41,35 +39,36 @@ namespace Graphutils {
 	/// @param g 
 	int add_vertex(graph& g);
 
-	/// @brief Removes an index and all the weights connecting to it. 
-	/// @param g Graph
-	/// @param vertex Vertex number (from 0 to number_of_vertices-1)
-	void remove_vertex(graph& g, int vertex);
-	
 	/// @brief Disconnects a vertex from the graph. It will therefore become connected to NO other vertex.
 	/// @param g Graph
 	/// @param vertex Vertex number (from 0 to number_of_vertices-1)
 	void disconnect_vertex(graph& g, int vertex);
 
+	/// @brief Removes an index and all the weights connecting to it. 
+	/// @param g Graph
+	/// @param vertex Vertex number (from 0 to number_of_vertices-1)
+	void remove_vertex(graph& g, int vertex);
+	
 	/// @brief Adds an edge to the Graph g linking vertex1 and vertex2 with the cost weight 
 	/// @param g Graph
 	/// @param vertex1 First vertex
 	/// @param vertex2 Second vertex
 	/// @param weight Weight between both vertices.
 	void add_edge(graph& g, int vertex1, int vertex2, double weight);
-
+	/*
 	/// @brief Removes the edge (vertex1,vertex2) from the graph
 	/// @param g Graph
 	/// @param vertex1 First vertex
 	/// @param vertex2 Second vertex
 	void remove_edge(graph& g, int vertex1, int vertex2);
 
-	/// @brief Adds the vertices that are missing. 
+	/// @brief Adds the vertices if they are missing, and connect them with the cost weight.
 	/// @param g 
 	/// @param vertex1 
 	/// @param vertex2 
 	/// @param weight 
 	void add_link(graph& g, int vertex1, int vertex2, double weight);
+	*/
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
 	/// @param m The graph to print

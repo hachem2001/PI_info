@@ -1,30 +1,100 @@
 #include "graphutils.hpp"
 
 // For now this print implementation does not show the label. This can be easily modified later.
-std::ostream &operator<<(std::ostream &os, std::list<Graphutils::cell> neighs) {
-  if (neighs.size() == 0) {
-    os << "[]";
-  } /*else if (neighs.size() == 1) {
-    os << "[" << neighs.front() << "]";
-  } */else {
-    auto before_last = --neighs.end();
-    os << "[";
-    for (auto it = neighs.begin(); it != before_last; it++) {
-      Graphutils::cell neighbour = *it;
-      os << "(" << neighbour.vertex << "," << neighbour.weight << ")" << ";";
+
+
+namespace Graphutils
+{
+  std::ostream &operator<<(std::ostream &os, std::list<cell> neighs) {
+    if (neighs.size() == 0) {
+      os << "[]";
+    } /*else if (neighs.size() == 1) {
+      os << "[" << neighs.front() << "]";
+    } */else {
+      auto before_last = --neighs.end();
+      os << "[";
+      for (auto it = neighs.begin(); it != before_last; it++) {
+        cell neighbour = *it;
+        os << "(" << neighbour.vertex << "," << neighbour.weight << ")" << ";";
+      }
+      os << "(" << neighs.back().vertex << "," << neighs.back().weight << ")" << "]";
     }
-    os << "(" << neighs.back().vertex << "," << neighs.back().weight << ")" << "]";
+
+    return os;
   }
 
-  return os;
-}
+  std::ostream &operator<<(std::ostream &os, graph const &m) {
 
-std::ostream &operator<<(std::ostream &os, Graphutils::graph const &m) {
-
-  for (int vert = 0; vert < m.info.size() - 1; vert++) {
-    std::list<Graphutils::cell> adj = m.info[vert].second;
-    os << vert << ":" << adj << std::endl;
+    for (std::map<int, std::pair<label, std::list<cell>>>::const_iterator it=m.info.begin(); it!=m.info.end(); ++it){
+      std::list<cell> adj = it->second.second;
+      os << it->first << ":" << adj << std::endl;
+    }
+    os << m.info.size() - 1 << ":" << m.info[m.info.size() - 1].second;
+    return os;
   }
-  os << m.info.size() - 1 << ":" << m.info[m.info.size() - 1].second;
-  return os;
+
+  graph empty_graph()
+  {
+    graph a;
+    // Nothing special here really. Just creating a structure and sending it.
+    // With a struct, we worry less about properly freeing memory upon deletion.
+    return a;
+  }
+  
+  int add_vertex(graph& g)
+  {
+    g._number_of_created_vertices++;
+    g.number_of_vertices++;
+    label l; l.index=g._number_of_created_vertices;
+    std::list<cell> empty_adjacency_list;
+    g.info.emplace(l, empty_adjacency_list); //(std::pair<label, std::list<cell>>(l, empty_adjacency_list));
+    return g.number_of_vertices;
+  }
+  
+  void disconnect_vertex(graph& g, int vertex)
+  {
+    std::list<cell> neighs = g.info.at(vertex).second; // List of all the neigbours to vertex
+    while (neighs.size() >0) {
+      // Remove each connection from both the vertex's list and the list of the element in question
+      cell a = neighs.front();
+      std::list<cell>::iterator corresponding_cell = a._p;
+
+      g.info.at(a.vertex).second.erase(a._p);
+      neighs.pop_front();
+    }
+  }
+
+  void remove_vertex(graph& g, int vertex)
+  {
+    disconnect_vertex(g, vertex);
+    g.info.erase(vertex);
+    g.number_of_vertices--;
+  }
+  
+  void add_edge(graph& g, int vertex1, int vertex2, double weight)
+  {
+    // This function is optimised as in to insert the new cells and have them ordered by weight.
+    // Since we create the graph once and only seem to create few points in the future : this seems like a better approach.
+    cell c1, c2; // The two cells to add.
+    c1.vertex = vertex2; c2.vertex = vertex1;
+    c1.weight = c2.weight = weight;
+    
+    // Insert both.
+    std::list<cell>::iterator it1 = g.info.at(vertex1).second.begin();
+    while (it->weight < weight){
+      it++;
+    }
+    g.info.at(vertex1).second.insert(it, c1);
+    it1--;
+
+    std::list<cell>::iterator it2 = g.info.at(vertex2).second.begin();
+    while (it->weight < weight) {
+      it2++;
+    }
+    g.info.at(vertex2).second.insert(it, c1);
+    it2--;
+
+    it1->_p = it2; // The linkage is here.
+    it2->_p = it1;
+  }
 }
