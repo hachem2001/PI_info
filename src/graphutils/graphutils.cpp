@@ -141,6 +141,7 @@ namespace Graphutils
   
   std::pair<bool, std::list<cell>::iterator> get_edge(graph& g, int vertex1, int vertex2)
   {
+
     if (!(g.info.count(vertex1)==0 || g.info.count(vertex2)==0)) {
       std::list<cell> &adj1 = g.info.at(vertex1).second;
 
@@ -207,6 +208,33 @@ namespace Graphutils
       }
     }
     return count;
+  }
+  
+  void optimize_degree_2(graph& g)
+  {
+    std::map<int, std::pair<label, std::list<cell>>>::iterator it=g.info.begin();
+    while (it!=g.info.end()) {
+      if (!it->second.first.terminal && it->second.second.size() == 2) { // If not terminal and length less than 1
+        std::list<cell> &adj = it->second.second;
+        std::list<cell>::iterator it1 = adj.begin(),  it2 = ++adj.begin();
+        double weight1 = it1->weight, weight2 = it2->weight;
+        std::pair<bool, double> middle_weight = get_weight(g, it1->vertex, it2->vertex);
+        if (middle_weight.first == true) {
+          if (weight1 + weight2 > middle_weight.second) {
+            disconnect_vertex(g, it->first); // Edge
+            it = g.info.erase(it);
+          } else {
+            // Remove mediating edge
+            remove_edge(g, it1->vertex, it2->vertex);
+            it++;
+          }
+        } else {
+          it++;
+        }
+      } else {
+        it++;
+      }
+    }
   }
 
 

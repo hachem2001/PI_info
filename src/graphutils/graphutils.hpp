@@ -102,10 +102,16 @@ namespace Graphutils {
 	/// @param set Boolean, true or false;
 	void set_terminal(graph&, int vertex, bool set);
 
+	// HERE WE START WORKING ON THE QUESTIONS ASKED IN THE PI PDF PROPERLY.
+
 	/// @brief Deletes leafs from the graph that are not labeled terminals
 	/// @param g Graph
 	/// @return Returns the number of leafs removed.
 	int remove_leafs(graph& g);
+
+	/// @brief Remove third edges if degree 2 non terminal vertices if sum of weights smaller than third edge, Or remove edge if otherwise. If non existant third edge : do nothing.
+	/// @param g Graph
+	void optimize_degree_2(graph& g);
 
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream

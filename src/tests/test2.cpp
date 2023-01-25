@@ -22,9 +22,5 @@ int main(int argc, char *argv[])
 	set_terminal(g, 0, true);
 	set_terminal(g, 5, true);
 	std::cout << g << std::endl;
-
-	std::cout << "Remove leafs." << std::endl;
-	remove_leafs(g); // Words as intended.
-	std::cout << g << std::endl;
 	return 0;
 }
