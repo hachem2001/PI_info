@@ -5,7 +5,7 @@ using namespace Graphutils;
 // Main
 int main(int argc, char *argv[])
 {
-	std::cout << "PI_Project" << std::endl;
+	std::cout << "Test 3 PI_Project" << std::endl;
 
 	graph g = empty_graph();
 	add_vertices(g, 9); // Let's make a turning star formation.

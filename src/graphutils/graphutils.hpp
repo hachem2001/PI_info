@@ -3,7 +3,7 @@
 #include <vector>
 #include <list>
 #include <map>
-
+#include <fstream>
 
 namespace Graphutils {
 
@@ -32,9 +32,15 @@ namespace Graphutils {
 		// It is currently used to modify the label to keep it unique for each vertex.
 	};
 
+
 	/// @brief Creates an empty graph
 	/// @return Empty Graph.
 	graph empty_graph();
+
+	/// @brief Attemps to create a graph from an ifstream (typically a file that is read for example). This correspond's to the scenarios format
+	/// @param stream Stream to transform into graph
+	/// @return Transformed graph
+	graph fstream_graph(std::ifstream& stream);
 
 	/// @brief Adds a vertex. Returns the number corresponding to the vertex
 	/// @param g Graph
@@ -111,7 +117,7 @@ namespace Graphutils {
 
 	/// @brief Remove third edges if degree 2 non terminal vertices if sum of weights smaller than third edge, Or remove edge if otherwise. If non existant third edge : do nothing.
 	/// @param g Graph
-	void optimize_degree_2(graph& g);
+	std::pair<int, int> optimize_degree_2(graph& g);
 
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
@@ -119,4 +125,3 @@ namespace Graphutils {
 	/// @return Output stream.
 	std::ostream& operator<<(std::ostream& os, graph const& m);
 }
-

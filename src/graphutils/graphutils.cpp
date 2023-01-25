@@ -46,6 +46,39 @@ namespace Graphutils
     return a;
   }
   
+  graph fstream_graph(std::ifstream& stream)
+  {
+    graph a;
+    std::string k_str; stream >> k_str; // Reads k and n
+    std::string n_str; stream >> n_str;
+    std::string str; // Will be used to read cells consecutively.
+
+    int k = static_cast<int>(stod(k_str)); // Convert k and n to ints.
+    int n = static_cast<int>(stod(n_str)); // We must convert to double first then to int (because of the scientific notation)
+
+    //std::cout << "Number of terminals : " << k << std::endl;
+    //std::cout << "Number of nodes : " << n << std::endl;
+
+    add_vertices(a, n); // Adds all the vertices at once.
+    for (int i=0; i<k; i++){
+      set_terminal(a, i, true);
+    }
+    for (int i=0; i<n; i++){
+      for (int j=0; j<n; j++){
+        stream >> str;
+        if (i>j) { // We don't want to add the edges twice. The matrix is symmetric. However we do need to keep reading.
+          continue;
+        }
+        double weight = stod(str); // Read the weight in position i,j in the adjacency matrix.
+        if (weight>0){ // I'm not sure if the string 0.0000 will be converted to a perfect 0 float, and that this comparison will work... Let's hope.
+          add_edge(a, i, j, weight);
+        }
+      }
+    }
+
+    return a;
+  }
+  
   int add_vertex(graph& g)
   {
     g._number_of_created_vertices++;
@@ -210,8 +243,9 @@ namespace Graphutils
     return count;
   }
   
-  void optimize_degree_2(graph& g)
+  std::pair<int, int> optimize_degree_2(graph& g)
   {
+    int number_of_removed_edges = 0, number_of_removed_vertices = 0;
     std::map<int, std::pair<label, std::list<cell>>>::iterator it=g.info.begin();
     while (it!=g.info.end()) {
       if (!it->second.first.terminal && it->second.second.size() == 2) { // If not terminal and length less than 1
@@ -223,9 +257,12 @@ namespace Graphutils
           if (weight1 + weight2 > middle_weight.second) {
             disconnect_vertex(g, it->first); // Edge
             it = g.info.erase(it);
+            number_of_removed_vertices += 1;
+            number_of_removed_edges += 2;
           } else {
             // Remove mediating edge
             remove_edge(g, it1->vertex, it2->vertex);
+            number_of_removed_edges += 1;
             it++;
           }
         } else {
@@ -235,6 +272,7 @@ namespace Graphutils
         it++;
       }
     }
+    return std::pair<int, int>(number_of_removed_vertices, number_of_removed_edges);
   }
 
 

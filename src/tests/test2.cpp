@@ -5,7 +5,7 @@ using namespace Graphutils;
 // Main
 int main(int argc, char *argv[])
 {
-	std::cout << "PI_Project" << std::endl;
+	std::cout << "Test 2 PI_Project" << std::endl;
 
 	graph g = empty_graph();
 	add_vertices(g, 6); // Let's make a star formation : one terminal only connected with leafs
