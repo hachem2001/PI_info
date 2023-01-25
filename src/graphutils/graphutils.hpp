@@ -17,6 +17,7 @@ namespace Graphutils {
 	/// @brief This is a label attached to a vertex. It could be the name of a city, a number, ...
 	struct label {
 		int index; // For the moment we just keep a number, and identify it to the index of creation of the graph, which should be unique
+		bool terminal = 0; // Indicates if the label in question is a terminal or not.
 	};
 
 	/// This is an augmented adjacency list representattion - every element {y,w,p} of an adjacency list to a vertex x contains : 
@@ -94,6 +95,17 @@ namespace Graphutils {
 	/// @param vertex2 Vertex 2
 	/// @param weight Weight
 	void add_link(graph& g, int vertex1, int vertex2, double weight);
+
+	/// @brief Sets the vertex as a terminal (or non terminal) (part of K) in the graph
+	/// @param g Graph
+	/// @param vertex The vertex to be 
+	/// @param set Boolean, true or false;
+	void set_terminal(graph&, int vertex, bool set);
+
+	/// @brief Deletes leafs from the graph that are not labeled terminals
+	/// @param g Graph
+	/// @return Returns the number of leafs removed.
+	int remove_leafs(graph& g);
 
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream

@@ -1,4 +1,5 @@
 #include "graphutils.hpp"
+#include "assert.h"
 
 // For now this print implementation does not show the label. This can be easily modified later.
 
@@ -27,7 +28,11 @@ namespace Graphutils
 
     for (std::map<int, std::pair<label, std::list<cell>>>::const_iterator it=m.info.begin(); it!=m.info.end(); ++it){
       std::list<cell> adj = it->second.second;
-      os << it->first << ":" << adj << std::endl;
+      os << it->first;
+      if (it->second.first.terminal) {
+        os << "*"; // Terminals have a star next to them
+      }
+      os << ":" << adj << std::endl;
     }
 
     return os;
@@ -67,6 +72,7 @@ namespace Graphutils
 
   int add_vertices(graph& g, int n)
   {
+    // Add n different vertices (and return the index of the first one).
     int first_index = add_vertex(g);
     for (int i=0; i<n-1; i++){
       add_vertex(g);
@@ -82,9 +88,9 @@ namespace Graphutils
       cell a = neighs.front();
       std::list<cell>::iterator &corresponding_cell = a._p;
 
-      //std::list<cell> &corresponding_neighs = g.info.at(a.vertex).second;
-      std::cout << "Passed by here " << corresponding_cell->vertex;
-      //corresponding_neighs.erase(corresponding_cell);
+      std::list<cell> &corresponding_neighs = g.info.at(a.vertex).second;
+      //std::cout << "Passed by here " << corresponding_cell->vertex;
+      corresponding_neighs.erase(corresponding_cell);
       neighs.pop_front();
     }
   }
@@ -178,4 +184,31 @@ namespace Graphutils
 
     add_edge(g, vertex1, vertex2, weight);
   }
+  
+  void set_terminal(graph &g, int vertex, bool set=1)
+  {
+    std::map<int, std::pair<label, std::list<cell>>>::iterator it = g.info.find(vertex);
+    assert(it != g.info.end()); // Asserts the vertex exists. Throws an error otherwise
+    
+    it->second.first.terminal = set;
+  }
+  
+  int remove_leafs(graph& g)
+  {
+    int count = 0; // Counts the number of removed leafs.
+    std::map<int, std::pair<label, std::list<cell>>>::iterator it=g.info.begin();
+    while (it!=g.info.end()) {
+      if (!it->second.first.terminal && it->second.second.size() <= 1) { // If not terminal and length less than 1
+        disconnect_vertex(g, it->first); // Disconnect instead of delete, so we can keep iterating.
+        it = g.info.erase(it); // Should increment the iterator after erasing it.
+        count++;
+      } else {
+        it++;
+      }
+    }
+    return count;
+  }
+
+
+
 }
