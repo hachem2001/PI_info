@@ -119,6 +119,19 @@ namespace Graphutils {
 	/// @param g Graph
 	std::pair<int, int> optimize_degree_2(graph& g);
 
+	/// @brief Minimum distance array from vertex to other vertices
+	/// @param g Graph g
+	/// @param vertex Source verterx
+	/// @return Vector containing distance to vertex
+	std::map<int, double> min_distance_to_source(graph& g, int vertex);
+
+	/// @brief Minimum distance matrix 
+	/// @param g 
+	/// @param vertex1 
+	/// @param vertex2 
+	/// @return 
+	std::map<int, std::map<int, double>> min_distance(graph& g);
+
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
 	/// @param m The graph to print

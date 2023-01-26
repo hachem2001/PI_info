@@ -1,6 +1,8 @@
 #include "graphutils.hpp"
 #include "assert.h"
 
+#include <queue>
+
 // For now this print implementation does not show the label. This can be easily modified later.
 
 
@@ -273,6 +275,75 @@ namespace Graphutils
       }
     }
     return std::pair<int, int>(number_of_removed_vertices, number_of_removed_edges);
+  }
+
+  class _comparison{
+    bool reverse;
+    public:
+    _comparison(const bool& revparam=false)
+      {reverse=revparam;}
+    bool operator() (const std::pair<int, double>& lhs, const std::pair<int, double>&rhs) const
+    {
+      if (!reverse) {
+        if (lhs.second < 0) { return true; }
+        if  (rhs.second < 0) { return false;}
+        return lhs.second > rhs.second;
+      } else {
+        if (lhs.second < 0) { return false; }
+        if  (rhs.second < 0) { return true;}
+        return lhs.second<rhs.second;
+      }
+    }
+  };
+
+  std::map<int, double> min_distance_to_source(graph& g, int vertex)
+  // Basically Dijkstra's algorithm
+  {
+    std::map<int, double> result; // -1 for infinity.
+    result.emplace(vertex, 0);
+    
+    std::priority_queue<std::pair<int, double>, std::vector<std::pair<int, double>>, _comparison> queue;
+    
+    for (auto v_info: g.info){
+      if (v_info.first != vertex) { // Go through all the vertex
+        result.emplace(v_info.first, -1); 
+      }
+      queue.push(std::pair<int, double>(v_info.first, result.at(v_info.first)));
+    }
+    
+    while (!queue.empty()) {
+      std::pair<int, double> u = queue.top();
+
+      std::pair<label, std::list<cell>> &u_info = g.info.at(u.first);
+      std::list<cell> &adj = u_info.second;
+
+      for (std::list<cell>::iterator it=adj.begin(); it!=adj.end(); it++){
+        double d = result.at(u.first) + it->weight;
+        double dist_neigh = result.at(it->vertex);
+        if (dist_neigh<0 || d<dist_neigh) {
+          if (result.count(it->vertex) == 0){
+            result.emplace(it->vertex, d);
+          } else {
+            result[it->vertex] = d;
+          }
+          queue.push(std::pair<int, double>(it->vertex, d));
+        }
+      }
+      queue.pop();
+    }
+    
+    return result;
+  }
+  
+  std::map<int, std::map<int, double>> min_distance(graph& g)
+  {
+    std::map<int, std::map<int, double>> min_distance_matrix;
+    
+    for (auto v_info: g.info){
+      min_distance_matrix.emplace(v_info.first, min_distance_to_source(g, v_info.first)); 
+    }
+    
+    return min_distance_matrix;
   }
 
 
