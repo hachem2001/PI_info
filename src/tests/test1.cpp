@@ -1,11 +1,13 @@
 #include <iostream>
 #include "graphutils.hpp"
 
+
 using namespace Graphutils;
 // Main
 int main(int argc, char *argv[])
 {
 	std::cout << "Test 1 PI_Project" << std::endl;
+	
 
 	graph g = empty_graph();
 	add_vertices(g, 6);

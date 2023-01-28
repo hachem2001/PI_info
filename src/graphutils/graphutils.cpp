@@ -39,6 +39,19 @@ namespace Graphutils
 
     return os;
   }
+  
+  std::ostream& operator<<(std::ostream& os, std::map<int, std::map<int, double>> const& min_matrix)
+  {
+    for (std::map<int, std::map<int, double>>::const_iterator v=min_matrix.begin(); v!=min_matrix.end(); v++){
+      os << v->first << ":";
+      for (std::map<int, double>::const_iterator u=v->second.begin(); u!=v->second.end(); u++){
+        os << "(" << u->first << "," << u->second << ")" << ";";
+		  }
+      os << std::endl;
+    }
+		os << std::endl;
+    return os;
+  }
 
   graph empty_graph()
   {
@@ -83,11 +96,11 @@ namespace Graphutils
   
   int add_vertex(graph& g)
   {
-    g._number_of_created_vertices++;
-    g.number_of_vertices++;
     label l; l.index=g._number_of_created_vertices;
     std::list<cell> empty_adjacency_list;
-    g.info.emplace(g.number_of_vertices-1, std::pair<label, std::list<cell>>(l, empty_adjacency_list)); //(std::pair<label, std::list<cell>>(l, empty_adjacency_list));
+    g.info.emplace(g.number_of_vertices, std::pair<label, std::list<cell>>(l, empty_adjacency_list)); //(std::pair<label, std::list<cell>>(l, empty_adjacency_list));
+    g._number_of_created_vertices++;
+    g.number_of_vertices++;
     return g.number_of_vertices;
   }
   
@@ -98,10 +111,11 @@ namespace Graphutils
         g._number_of_created_vertices = index+1;
         // Make sure any newly added vertices with the other functions have a unique index using this trick.
       }
-      label l;
+      label l; l.index=g._number_of_created_vertices-1;
       std::list<cell> empty_adjacency_list;
       g.info.emplace(index, std::pair<label, std::list<cell>>(l, empty_adjacency_list));
     }
+    g.number_of_vertices++;
     return index;
   }
 
@@ -172,6 +186,7 @@ namespace Graphutils
       it2 = adj2.insert(it2, c2);
     }
     it1->_p = it2;
+    g.number_of_edges += 1;
   }
   
   std::pair<bool, std::list<cell>::iterator> get_edge(graph& g, int vertex1, int vertex2)
@@ -208,9 +223,16 @@ namespace Graphutils
       if (it->vertex == vertex2) { // First first cell leading to vertex2 from vertex1
         adj2.erase(it->_p); // Erase the corresponding link from vertex 2's adjacency list
         adj1.erase(it); // Erase the link from vertex 1's adjacency list
+        g.number_of_edges--;
         return; // Or break;
       }
     }
+  }
+
+  void remove_edge(graph& g, std::list<cell>& adj, std::list<cell>::iterator& it) { // Removes edge using cell
+    std::list<cell> &adj2 = g.info.at(it->vertex).second;
+    adj.erase(it);
+    adj2.erase(it->_p); // Efficiency of augmented adjacency lists exploited at it's best :)
   }
   
   void add_link(graph& g, int vertex1, int vertex2, double weight)
@@ -277,10 +299,10 @@ namespace Graphutils
     return std::pair<int, int>(number_of_removed_vertices, number_of_removed_edges);
   }
 
-  class _comparison{
+  class _comparison_for_min_distance_to_source{
     bool reverse;
     public:
-    _comparison(const bool& revparam=false)
+    _comparison_for_min_distance_to_source(const bool& revparam=false)
       {reverse=revparam;}
     bool operator() (const std::pair<int, double>& lhs, const std::pair<int, double>&rhs) const
     {
@@ -302,7 +324,7 @@ namespace Graphutils
     std::map<int, double> result; // -1 for infinity.
     result.emplace(vertex, 0);
     
-    std::priority_queue<std::pair<int, double>, std::vector<std::pair<int, double>>, _comparison> queue;
+    std::priority_queue<std::pair<int, double>, std::vector<std::pair<int, double>>, _comparison_for_min_distance_to_source> queue;
     
     for (auto v_info: g.info){
       if (v_info.first != vertex) { // Go through all the vertex
@@ -344,6 +366,106 @@ namespace Graphutils
     }
     
     return min_distance_matrix;
+  }
+  
+  graph min_distance_graph(std::map<int, std::map<int, double>> min_distance_matrix)
+  {
+    graph d = empty_graph();
+    typedef std::map<int, std::map<int, double>>::iterator __map_iterator; // For less writing
+
+    // Add all the vertices and eges
+    for (__map_iterator it = min_distance_matrix.begin(); it!= min_distance_matrix.end(); it++){
+      add_vertex(d, it->first);
+      for (std::map<int, double>::iterator jt = it->second.begin(); jt!=it->second.end(); jt++) {
+        if (jt->first > it->first) { // In order not to go through the same edge twice.
+          add_vertex(d, jt->first);
+          add_edge(d, it->first, jt->first, jt->second); // Add the edge.
+        }
+      }
+    }
+    return d; // Return the graph D.
+  }
+
+  class _comparison_for_primm_algorithm{
+    bool reverse;
+    public:
+    _comparison_for_primm_algorithm(const bool& revparam=false)
+      {reverse=revparam;}
+    bool operator() (const std::pair<int, double>& lhs, const std::pair<int, double>&rhs) const
+    {
+      if (!reverse) {
+        if (lhs.second < 0) { return true; }
+        if  (rhs.second < 0) { return false;}
+        return lhs.second > rhs.second;
+      } else {
+        if (lhs.second < 0) { return false; }
+        if  (rhs.second < 0) { return true;}
+        return lhs.second<rhs.second;
+      }
+    }
+  };
+
+  graph primm_mst(graph& g)
+  {
+
+    graph mst;
+    std::map<int, std::pair<int, double>> result;
+    std::map<int, bool> visited; // Keeps track of all visited nodes.
+    std::map<int, double> value; // Minimum weight for each source.
+    std::priority_queue<std::pair<int, double>, std::vector<std::pair<int, double>>, _comparison_for_primm_algorithm> queue;
+    
+    int first_vertex = g.info.begin()->first;
+    add_vertex(mst, first_vertex);
+    queue.push(std::pair<int, double>(first_vertex, -1));
+    typedef std::map<int, std::pair<label, std::list<cell>>>::iterator __ginfoiterator ;
+    for (__ginfoiterator v_info=g.info.begin(); v_info!=g.info.end(); v_info++){
+      value.emplace(v_info->first, -1); // As for Dijkstra's algorithm, I use -1 to represent infinities,
+    }
+    
+    while (!queue.empty()) {
+      std::pair<int, double> u = queue.top();queue.pop(); // Get the vertex connected by the smallest weight, and remove from queue
+      visited[u.first] = true; // Mark as visited
+
+      std::pair<label, std::list<cell>> &u_info = g.info.at(u.first);
+      std::list<cell> &adj = u_info.second;
+
+      for (std::list<cell>::iterator it=adj.begin(); it!=adj.end(); it++){
+        int vertex = it->vertex;
+        double weight = it->weight;
+        
+        if (!visited[vertex] && (value[vertex] < 0 || value[vertex] > weight)) { // If not visited and has lower weight : update the queue.
+          value[vertex] = weight;
+          result[vertex] = std::pair<int, double>(u.first, weight);
+          queue.push(std::pair<int, double>(vertex, weight));
+        }
+      }
+    }
+    for (std::map<int, std::pair<int, double>>::iterator it=result.begin(); it!=result.end(); it++) { // Create the minimum spanning tree here by going through the nodes in order.
+      add_link(mst, it->first, it->second.first, it->second.second);
+    }
+    return mst;
+  }
+  
+  int optimize_edge_with_min_distance_matrix(graph& g, std::map<int, std::map<int, double>> min_dist_matrix) // This is for the question 6
+  {
+    int number_of_removed_edges = 0;
+    std::map<int, std::pair<label, std::list<cell>>>::iterator it=g.info.begin();
+    while (it!=g.info.end()) {
+      std::list<cell> &adj = it->second.second;
+      std::list<cell>::iterator it_v = adj.begin();
+      int vertex1 = it->second.first.index, vertex2; // The indices of the vertices
+      while (it_v!=adj.end()) {
+        vertex2 = it_v->vertex;
+        if (it_v->weight > min_dist_matrix.at(vertex1).at(vertex2)) {
+          std::list<cell>::iterator it = it_v; // Copy the iterator
+          it_v++; // Advance the iterator before deleting the edge.
+          remove_edge(g, adj, it);
+          number_of_removed_edges++;
+        } else it_v++; // Advance the current iterator.
+      }
+      it++;
+    }
+    return number_of_removed_edges;
   }
 
 

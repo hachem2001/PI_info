@@ -95,6 +95,12 @@ namespace Graphutils {
 	/// @param vertex2 Second vertex
 	void remove_edge(graph& g, int vertex1, int vertex2);
 
+	/// @brief Removes the edge corresponding to the iterator it. Runs in O(1) compared to the previous function
+	/// @param g Graph.
+	/// @param adj Adjacency list of the vertex containing the iterator
+	/// @param it The iterator in question
+	void remove_edge(graph& g, std::list<cell>& adj, std::list<cell>::iterator& it);
+
 	/// @brief Adds the vertices if they are missing, and connect them with the cost weight.
 	/// @param g Graph
 	/// @param vertex1 Vertex 1
@@ -132,9 +138,30 @@ namespace Graphutils {
 	/// @return 
 	std::map<int, std::map<int, double>> min_distance(graph& g);
 
+	/// @brief Transforms the minimum distance matrix into a graph.
+	/// @param min_distance_matrix The minimum distance matrix
+	/// @return Minimum distance graph D
+	graph min_distance_graph(std::map<int, std::map<int, double>> min_distance_matrix);
+
+	/// @brief Calculates the minimum spanning tree of G using primm's algorithm
+	/// @param g Connected input graph. (Must be connected!)
+	/// @return MST graph.
+	graph primm_mst(graph& g);
+
+	/// @brief Remove edges that are longer than the minimum distance linking their two edges
+	/// @param g Graph to pre-process
+	/// @param min_dist_matrix the minimum distance matrix calculated with min_distance. 
+	int optimize_edge_with_min_distance_matrix(graph& g, std::map<int, std::map<int, double>> min_dist_matrix);
+
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
 	/// @param m The graph to print
 	/// @return Output stream.
 	std::ostream& operator<<(std::ostream& os, graph const& m);
+
+	/// @brief Allows to print the mininal distance matrix in a readable format.
+	/// @param os Output stream
+	/// @param min_matrix The matrix in question
+	/// @return Output stream.
+	std::ostream& operator<<(std::ostream& os, std::map<int, std::map<int, double>> const& min_matrix);
 }

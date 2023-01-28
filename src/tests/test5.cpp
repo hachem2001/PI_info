@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	add_edge(g, 1, 2, 9);
 
 	std::cout << g << std::endl;
-
+	
 	std::map<int, std::map<int, double>> min_matrix = min_distance(g);
 	for (std::map<int, std::map<int, double>>::iterator v=min_matrix.begin(); v!=min_matrix.end(); v++){
 		std::cout << v->first << ":";
