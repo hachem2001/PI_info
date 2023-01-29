@@ -4,38 +4,62 @@
 #include <queue>
 #include <cmath>
 #include <algorithm> // For std::set_union.
+//#include <bitset>
 
 // For now this print implementation does not show the label. This can be easily modified later.
 namespace Setutils
 {
+  /*
   unsigned long int _bit_next_permutation(unsigned long int v) { // Binary Hack
     unsigned long int t = (v | (v - 1)) + 1;
     unsigned long int w = t | ((((t & -t) / (v & -v)) >> 1) - 1);
     return w; // If the input is 000111, the result is 001011. Then 001101 then 001110 ... Useful bit operation.
-  }
+  }*/
 
   std::vector<std::set<int>> get_subsets(std::set<int>& set, int k)
   {
     int n = set.size();
     std::vector<std::set<int>> results;
+
+    std::vector<std::set<int>> previous;
+    std::vector<std::set<int>> current;
+
+    previous.emplace_back(std::set<int>());
+    std::set<int> s = *(previous.begin());
+    results.emplace_back(s); // Add the first element
     std::vector<int> set_as_vector(set.begin(), set.end());
 
-    unsigned long int previous = pow(2, k + 1) - 1; // For k = 3, it'll be ..00111 for example.
-    unsigned long int max_count = pow(2, n);
-    //std::cout << max_count << std::endl;
-    //std::cout << previous << std::endl;
-    for (long int current = previous; (previous <= current && current < max_count); previous = current, current = _bit_next_permutation(current))
+    /*for (int element: set_as_vector) {
+      std::set<int> s; s.insert(element);
+      results.emplace_back(s);
+      previous.emplace_back(s);
+    }*/
+
+
+    for (int i=1; i<k; i++)
     { // Everytime, current has at most 3 bits.
-      std::set<int> s; // Current subset that we're calculating
-      for (unsigned long int j = 0; j < n; j++) {
-        if ((current & (1 << j)) > 0) { // Take all elements corresponding to the right bit.
-          s.insert(set_as_vector[j]); // Add the element to the growing set
+      int second_counter = 0;
+      for (std::set<int> s:previous) {
+        int counter = 0;
+        for (int element: set_as_vector) {
+          if (counter > second_counter+i) {
+            std::set<int> set_to_add = std::set<int>(s);
+            set_to_add.insert(element);
+            current.emplace_back(set_to_add);
+          }
+          counter++;
         }
+        second_counter++;
       }
-      results.push_back(s);
+      for (std::set<int> s:current) {
+        results.push_back(s);
+      }
+      previous = current;
+      current = std::vector<std::set<int>>();
     }
     return results;
   }
+
 }
 
 namespace Graphutils
@@ -676,5 +700,25 @@ namespace Graphutils
     return T;
   }
 
+  graph distance_network_heuristic_algorithm(graph& g, graph& min_dist_graph, std::map<int, std::map<int, double>>& min_dist_matrix){
+    std::set<int> K = get_terminals(g);
+    graph restriction = restrict_graph_copy(min_dist_graph,K);
+    graph T_D = primm_mst(restriction);
+    std::set<int> set_of_vertices = get_set_of_all_vertices(T_D);
+    std::list<std::pair<int,double>> path;
+    for(std::map<int, std::pair<label, std::list<cell>>>::iterator it = T_D.info.begin();it!= T_D.info.end();it++){
+      for(std::list<cell>::iterator jt=it->second.second.begin();jt!=it->second.second.end();jt++){
+        path = shortest_path(g,min_dist_matrix,it->first,jt->vertex);
+        for(auto v = path.begin();v!=path.end();v++){
+          set_of_vertices.insert(v->first);
+        }
+        set_of_vertices.insert(it->first);
+      }
+    }
+    restriction = restrict_graph_copy(g,set_of_vertices);
+    graph T = primm_mst(restriction);
+    remove_leafs(T);
+    return T;
+  }
 
 }

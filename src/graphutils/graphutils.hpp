@@ -10,7 +10,7 @@ namespace Setutils {
 	/// @brief Finds all subsets of size less than or equal to k of set s given its size n.
 	/// @param set the set from which we'll get the subsets
 	/// @param n The number of elemenst in s
-	/// @param k 
+	/// @param k The maximum size of the subsets to find
 	/// @return A vector containing all subsets of set, of size k.
 	std::vector<std::set<int>> get_subsets(std::set<int>& set, int k); 
 }
@@ -210,6 +210,13 @@ namespace Graphutils {
 	/// @param min_dist_matrix The min distance matrix corresponding to g.
 	/// @return A graph that is a steiner tree, approximating the Steiner minimal tree.
 	graph shortest_heuristic_path_algorithm(graph &g, std::map<int,std::map<int,double>>& min_dist_matrix);
+
+	/// @brief Uses the first heuristic algorithm mentioned in the PDF
+	/// @param g Graph g
+	/// @param min_dist_graph Corresponding minimum distance graph.
+	/// @param min_dist_matrix Corresponding minimum distance matrix
+	/// @return Approximation of the Steiner minimal Tree
+	graph distance_network_heuristic_algorithm(graph& g, graph& min_dist_graph, std::map<int, std::map<int, double>>& min_dist_matrix);
 
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
