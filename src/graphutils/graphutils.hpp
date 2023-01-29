@@ -7,7 +7,7 @@
 #include <fstream>
 
 namespace Setutils {
-	/// @brief Finds all subsets of size k of set s given its size n.
+	/// @brief Finds all subsets of size less than or equal to k of set s given its size n.
 	/// @param set the set from which we'll get the subsets
 	/// @param n The number of elemenst in s
 	/// @param k 
@@ -191,11 +191,25 @@ namespace Graphutils {
 	/// @return Graph cost.
 	double get_graph_cost(graph& g);
 
+	/// @brief Given the minimum distance matrix, it gives out the shortest path corresponding to it.
+	/// @param min_dist_matrix The minimum distance matrix
+	/// @param G the original graph G
+	/// @param a The first vertex
+	/// @param b The second vertex
+	/// @return Shortest path between a and b
+	std::list<std::pair<int,double>> shortest_path(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix, int a,int b);
+
 	/// @brief Returns the steiner minimal tree in G and D, D being the minimum distance graph of G.
 	/// @param g Original Graph
 	/// @param d Minimum distance grance
 	/// @return std::pair<graph1, graph2> with graph1 being the steiner minimal tree in g, and graph2 being the steiner minimal tree in d.
 	std::pair<graph, graph> enumeration_steiner_tree(graph& g, graph& d);
+
+	/// @brief Uses the heuristic method to calculate the steiner Tree.
+	/// @param g Graph g
+	/// @param min_dist_matrix The min distance matrix corresponding to g.
+	/// @return A graph that is a steiner tree, approximating the Steiner minimal tree.
+	graph shortest_heuristic_path_algorithm(graph &g, std::map<int,std::map<int,double>>& min_dist_matrix);
 
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
