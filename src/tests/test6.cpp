@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	std::cout << "Using scenario 6v2" << std::endl;
 	// Attempt to read a file and output the corresponding graph
 
-	std::ifstream myfile("../../../scenarios/scenario4.txt");
+	std::ifstream myfile("../../../scenarios/scenario5.txt");
 	graph g = fstream_graph(myfile);
 	/*graph g = empty_graph(); //fstream_graph(myfile);
 	add_vertices(g, 7);
@@ -27,7 +27,10 @@ int main(int argc, char *argv[])
 	add_edge(g, 3, 6, 11);
 	add_edge(g, 1, 2, 9);
 	add_edge(g, 0, 4, 60);
-	add_edge(g, 5, 6, 60);*/
+	add_edge(g, 5, 6, 60);
+	set_terminal(g, 1, true);
+	set_terminal(g, 4, true);
+	*/
 
 	std::cout << g << std::endl;
 	std::cout << "Preprocessing on g" << std::endl;
@@ -75,9 +78,12 @@ int main(int argc, char *argv[])
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 
-	std::pair<graph,graph> enumeration_steiner_tree(g, min_dist_graph);
-	
+	std::cout << "Calculating the minimum steiner tree in D" << std::endl;
+	start_c = clock();
+	std::pair<graph,graph> result = enumeration_steiner_tree(g, min_dist_graph);
+	end_c = clock();
+	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 
-	//std::cout << mst_d << std::endl;
+	std::cout << result.second << std::endl;
 	return 0;
 }

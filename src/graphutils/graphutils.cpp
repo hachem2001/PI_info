@@ -22,8 +22,8 @@ namespace Setutils
 
     unsigned long int previous = pow(2, k+1)-1; // For k = 3, it'll be ..00111 for example.
     unsigned long int max_count = pow(2, n);
-    std::cout << max_count << std::endl;
-    std::cout << previous << std::endl;
+    //std::cout << max_count << std::endl;
+    //std::cout << previous << std::endl;
     for (long int current = previous; (previous<=current && current<max_count); previous=current, current=_bit_next_permutation(current))
     { // Everytime, current has at most 3 bits.
       std::set<int> s; // Current subset that we're calculating
@@ -524,6 +524,15 @@ namespace Graphutils
     return result;
   }
 
+  std::set<int> get_set_of_all_vertices(graph& g)
+  {
+    std::set<int> points ; // Set of points
+    for (std::map<int, std::pair<label, std::list<cell>>>::iterator it=g.info.begin(); it!=g.info.end(); it++) {
+      points.insert(it->first); // Insert the index.
+    }
+    return points;
+  }
+
   std::set<int> get_terminals(graph& g)
   {
     std::set<int> terminals ; // Contains the terminals
@@ -573,8 +582,7 @@ namespace Graphutils
       std::vector<std::set<int>> possible_sets = Setutils::get_subsets(S, subset_size);
       for (std::set<int> subs :possible_sets) { // Go through all the listed subsets of size subset_size
         // subs is a possible subset.
-        std::set<int> KunionSubset;
-        std::set_union(S.begin(), S.end(), subs.begin(), subs.end(), KunionSubset.begin());
+        std::set<int> KunionSubset(K); KunionSubset.merge(subs); // Only C++17 functionality used.
         std::set<int>::iterator it=KunionSubset.begin();
         while (it != KunionSubset.end()) {
           graph restricted_copy = restrict_graph_copy(d, KunionSubset); // restricts D to the terminals and the subset of branching
@@ -583,7 +591,7 @@ namespace Graphutils
           if ((coust_min_span_tree_in_d < 0) || cost_of_tree < coust_min_span_tree_in_d) {
             steiner_min_tree_in_d = min_span_tree;
           }
-          
+          it++;
         }
       }
     }

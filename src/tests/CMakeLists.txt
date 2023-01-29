@@ -7,6 +7,7 @@ add_executable(test6 test6.cpp)
 
 #add_subdirectory(../graphutils)
 #list(APPEND MAIN_LIBS Graphutils)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../graphutils") 
 
 target_link_libraries(test1 PRIVATE ${MAIN_LIBS})
 target_link_libraries(test2 PRIVATE ${MAIN_LIBS})

@@ -171,6 +171,11 @@ namespace Graphutils {
 	/// @return A graph copy containing only the indices.
 	graph restrict_graph_copy(graph& g, std::set<int>& points);
 
+	/// @brief Takes graph as input, gives out a set of all the indices (of all the vertices)
+	/// @param g Input graph
+	/// @return std::set<int> of all the vertices as integers.
+	std::set<int> get_set_of_all_vertices(graph& g);
+
 	/// @brief Returns a set of the indices corresponding to the terminals
 	/// @param g Graph g.
 	/// @return std::set<int> with the indices
