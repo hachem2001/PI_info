@@ -15,7 +15,8 @@ int main(int argc, char *argv[])
 	// Attempt to read a file and output the corresponding graph
 
 	std::ifstream myfile("../../../scenarios/scenario4.txt");
-	graph g = empty_graph(); //fstream_graph(myfile);
+	graph g = fstream_graph(myfile);
+	/*graph g = empty_graph(); //fstream_graph(myfile);
 	add_vertices(g, 7);
 	add_edge(g, 0, 1, 9);
 	add_edge(g, 0, 5, 11);
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
 	add_edge(g, 3, 6, 11);
 	add_edge(g, 1, 2, 9);
 	add_edge(g, 0, 4, 60);
-	add_edge(g, 5, 6, 60);
+	add_edge(g, 5, 6, 60);*/
 
 	std::cout << g << std::endl;
 	std::cout << "Preprocessing on g" << std::endl;
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 	std::cout << "The minimum distance matrix :" << std::endl;
-	std::cout << min_matrix << std::endl;
+	//std::cout << min_matrix << std::endl;
 
 	std::cout << "Removing edges longer than corresponding min_distance" << std::endl;
 	start_c = clock();
@@ -58,14 +59,25 @@ int main(int argc, char *argv[])
 	end_c = clock();
 	std::cout << "(Removed " << edgs_rmvd << " edges)" << std::endl;
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
-	std::cout << g << std::endl;
+	//std::cout << g << std::endl;
 
 	std::cout << "Transforming minimum matrix to graph" << std::endl;
-	graph min_dist_graph = min_distance_graph(min_matrix);
-	std::cout << min_dist_graph << std::endl;
+	start_c = clock();
+	graph min_dist_graph = min_distance_graph(g, min_matrix);
+	end_c = clock();
+	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
+	//std::cout << min_dist_graph << std::endl;
 	
+
 	std::cout << "Minimum Spanning Tree for D" << std::endl;
+	start_c = clock();
 	graph mst_d = primm_mst(min_dist_graph);
-	std::cout << mst_d << std::endl;
+	end_c = clock();
+	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
+
+	std::pair<graph,graph> enumeration_steiner_tree(g, min_dist_graph);
+	
+
+	//std::cout << mst_d << std::endl;
 	return 0;
 }

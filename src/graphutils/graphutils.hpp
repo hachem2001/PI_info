@@ -3,7 +3,17 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <set>
 #include <fstream>
+
+namespace Setutils {
+	/// @brief Finds all subsets of size k of set s given its size n.
+	/// @param set the set from which we'll get the subsets
+	/// @param n The number of elemenst in s
+	/// @param k 
+	/// @return A vector containing all subsets of set, of size k.
+	std::vector<std::set<int>> get_subsets(std::set<int>& set, int k); 
+}
 
 namespace Graphutils {
 
@@ -25,8 +35,10 @@ namespace Graphutils {
 	/// The lists being double-linked, this would mean our deleting a link would be -slightly- faster.
 	struct graph {
 		int _number_of_created_vertices = 0;
+
 		int number_of_vertices = 0;
 		int number_of_edges = 0;
+		double total_cost = 0; // Contains the sum of all weights in the graph.
 		std::map<int, std::pair<label, std::list<cell>>> info;
 		// For _number_of_created_vertices: this number goes up and never down, and does up when a new vertex is created.
 		// It is currently used to modify the label to keep it unique for each vertex.
@@ -141,7 +153,7 @@ namespace Graphutils {
 	/// @brief Transforms the minimum distance matrix into a graph.
 	/// @param min_distance_matrix The minimum distance matrix
 	/// @return Minimum distance graph D
-	graph min_distance_graph(std::map<int, std::map<int, double>> min_distance_matrix);
+	graph min_distance_graph(graph& g, std::map<int, std::map<int, double>> min_distance_matrix);
 
 	/// @brief Calculates the minimum spanning tree of G using primm's algorithm
 	/// @param g Connected input graph. (Must be connected!)
@@ -152,6 +164,33 @@ namespace Graphutils {
 	/// @param g Graph to pre-process
 	/// @param min_dist_matrix the minimum distance matrix calculated with min_distance. 
 	int optimize_edge_with_min_distance_matrix(graph& g, std::map<int, std::map<int, double>> min_dist_matrix);
+
+	/// @brief Restricts the graph to the corresponding points.
+	/// @param g Graph to restrict
+	/// @param points A set containing the indices of the vertices to keep.
+	/// @return A graph copy containing only the indices.
+	graph restrict_graph_copy(graph& g, std::set<int>& points);
+
+	/// @brief Returns a set of the indices corresponding to the terminals
+	/// @param g Graph g.
+	/// @return std::set<int> with the indices
+	std::set<int> get_terminals(graph& g);
+
+	/// @brief Gives a set containing the indices of the terminals and branching points in g.
+	/// @param g Graph to go through
+	/// @return Returns std::pair<set of terminals, set of branching points>, each set containing the indices.
+	std::pair<std::set<int>, std::set<int>> get_terminal_and_branching_set(graph& g);
+
+	/// @brief Returns the sum of all weights in the graph.
+	/// @param g Input graph
+	/// @return Graph cost.
+	double get_graph_cost(graph& g);
+
+	/// @brief Returns the steiner minimal tree in G and D, D being the minimum distance graph of G.
+	/// @param g Original Graph
+	/// @param d Minimum distance grance
+	/// @return std::pair<graph1, graph2> with graph1 being the steiner minimal tree in g, and graph2 being the steiner minimal tree in d.
+	std::pair<graph, graph> enumeration_steiner_tree(graph& g, graph& d);
 
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream

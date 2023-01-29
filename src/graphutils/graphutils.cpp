@@ -2,9 +2,41 @@
 #include "assert.h"
 
 #include <queue>
+#include <cmath>
+#include <algorithm> // For std::set_union.
 
 // For now this print implementation does not show the label. This can be easily modified later.
+namespace Setutils
+{
+  unsigned long int _bit_next_permutation(unsigned long int v) { // Binary Hack
+    unsigned long int t = (v | (v - 1)) + 1;  
+    unsigned long int w = t | ((((t & -t) / (v & -v)) >> 1) - 1);  
+    return w; // If the input is 000111, the result is 001011. Then 001101 then 001110 ... Useful bit operation.
+  }
 
+  std::vector<std::set<int>> get_subsets(std::set<int>& set, int k)
+  {
+    int n = set.size();
+    std::vector<std::set<int>> results;
+    std::vector<int> set_as_vector(set.begin(), set.end());
+
+    unsigned long int previous = pow(2, k+1)-1; // For k = 3, it'll be ..00111 for example.
+    unsigned long int max_count = pow(2, n);
+    std::cout << max_count << std::endl;
+    std::cout << previous << std::endl;
+    for (long int current = previous; (previous<=current && current<max_count); previous=current, current=_bit_next_permutation(current))
+    { // Everytime, current has at most 3 bits.
+      std::set<int> s; // Current subset that we're calculating
+      for (unsigned long int j=0; j<n; j++) { 
+        if ((current & (1<<j)) > 0) { // Take all elements corresponding to the right bit.
+          s.insert(set_as_vector[j]); // Add the element to the growing set
+        }
+      }
+      results.push_back(s);
+    }
+    return results;
+  }
+}
 
 namespace Graphutils
 {
@@ -187,6 +219,7 @@ namespace Graphutils
     }
     it1->_p = it2;
     g.number_of_edges += 1;
+    g.total_cost += weight;
   }
   
   std::pair<bool, std::list<cell>::iterator> get_edge(graph& g, int vertex1, int vertex2)
@@ -221,9 +254,10 @@ namespace Graphutils
     
     for (std::list<cell>::iterator it = adj1.begin(); it!=adj1.end(); it++) {
       if (it->vertex == vertex2) { // First first cell leading to vertex2 from vertex1
+        g.number_of_edges--;
+        g.total_cost -= it->weight;
         adj2.erase(it->_p); // Erase the corresponding link from vertex 2's adjacency list
         adj1.erase(it); // Erase the link from vertex 1's adjacency list
-        g.number_of_edges--;
         return; // Or break;
       }
     }
@@ -368,7 +402,7 @@ namespace Graphutils
     return min_distance_matrix;
   }
   
-  graph min_distance_graph(std::map<int, std::map<int, double>> min_distance_matrix)
+  graph min_distance_graph(graph& g, std::map<int, std::map<int, double>> min_distance_matrix)
   {
     graph d = empty_graph();
     typedef std::map<int, std::map<int, double>>::iterator __map_iterator; // For less writing
@@ -379,6 +413,9 @@ namespace Graphutils
       for (std::map<int, double>::iterator jt = it->second.begin(); jt!=it->second.end(); jt++) {
         if (jt->first > it->first) { // In order not to go through the same edge twice.
           add_vertex(d, jt->first);
+          if (g.info.at(jt->first).first.terminal) {
+            set_terminal(d, jt->first, true);
+          }
           add_edge(d, it->first, jt->first, jt->second); // Add the edge.
         }
       }
@@ -467,7 +504,93 @@ namespace Graphutils
     }
     return number_of_removed_edges;
   }
+  
+  graph restrict_graph_copy(graph& g, std::set<int>& points)
+  {
+    graph result = empty_graph();
+
+    for (std::set<int>::iterator it=points.begin(); it!=points.end(); it++) {
+      add_vertex(result, *it); // Add the vertex
+      std::list<cell> adj = g.info[*it].second;
+      for (std::list<cell>::iterator it_adj = adj.begin(); it_adj!=adj.end(); it_adj++) // Iterate through adjacent points, and add the vertices that exist in our set of points to keep 
+      {
+        if (*it>it_adj->vertex && points.find(it_adj->vertex)!=points.end()){
+          // If the adjacent vertex exists in the points set, and make sure we don't add the same edge twice by verifying that the index of the second iterator is lower than the first.
+          add_edge(result, *it, it_adj->vertex, it_adj->weight);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  std::set<int> get_terminals(graph& g)
+  {
+    std::set<int> terminals ; // Contains the terminals
+    
+    for (std::map<int, std::pair<label, std::list<cell>>>::iterator it=g.info.begin(); it!=g.info.end(); it++) {
+      if (it->second.first.terminal) {
+        terminals.insert(it->first); // Insert the index.
+      }
+    }
+
+    return terminals;
+  }
+
+  std::pair<std::set<int>,std::set<int>> get_terminal_and_branching_set(graph& g)
+  {
+    std::set<int> terminals , branching_points ; // Self explanatory
+    
+    for (std::map<int, std::pair<label, std::list<cell>>>::iterator it=g.info.begin(); it!=g.info.end(); it++) {
+      if (it->second.first.terminal) {
+        terminals.insert(it->first); // Insert the index.
+      } else if (it->second.second.size()>=3) { // We don't include terminals that are branching points in here.
+        branching_points.insert(it->first);
+      }
+    }
+
+    return std::pair<std::set<int>,std::set<int>>(terminals, branching_points);
+  }
+  
+  double get_graph_cost(graph& g)
+  {
+    return g.total_cost; // The total cost is already stored in this variable
+  }
+  
+  std::pair<graph, graph> enumeration_steiner_tree(graph& g, graph& d)
+  {
+    std::pair<std::set<int>,std::set<int>> KunionS = get_terminal_and_branching_set(g); // S union K discussed in the program.
+    std::set<int> &K = KunionS.first, &S = KunionS.second; // Get K and S seperately
+
+    graph steiner_min_tree_in_g = empty_graph(), steiner_min_tree_in_d = empty_graph();
+    double coust_min_span_tree_in_d = -1;
 
 
+    int number_of_terminals = K.size(); // We could use g or d too. Same thing.
+    int number_of_branching_points = S.size();
 
+    for (int subset_size=0; subset_size<=number_of_terminals-2; subset_size++){
+      std::vector<std::set<int>> possible_sets = Setutils::get_subsets(S, subset_size);
+      for (std::set<int> subs :possible_sets) { // Go through all the listed subsets of size subset_size
+        // subs is a possible subset.
+        std::set<int> KunionSubset;
+        std::set_union(S.begin(), S.end(), subs.begin(), subs.end(), KunionSubset.begin());
+        std::set<int>::iterator it=KunionSubset.begin();
+        while (it != KunionSubset.end()) {
+          graph restricted_copy = restrict_graph_copy(d, KunionSubset); // restricts D to the terminals and the subset of branching
+          graph min_span_tree = primm_mst(restricted_copy);
+          double cost_of_tree = get_graph_cost(min_span_tree);
+          if ((coust_min_span_tree_in_d < 0) || cost_of_tree < coust_min_span_tree_in_d) {
+            steiner_min_tree_in_d = min_span_tree;
+          }
+          
+        }
+      }
+    }
+
+    // TODO: Add the part where I calculate the inverse tree in G from the tree in D. Missing.
+    return std::pair<graph, graph>(steiner_min_tree_in_g, steiner_min_tree_in_d);
+  }
+
+  
 }
