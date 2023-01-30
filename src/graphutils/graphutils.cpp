@@ -16,40 +16,51 @@ namespace Setutils
     return w; // If the input is 000111, the result is 001011. Then 001101 then 001110 ... Useful bit operation.
   }*/
 
+  void get_subsets(std::vector<int>& set, int k, int idx, std::vector<int>& current, std::vector<std::vector<int>>& solution){
+    if (current.size() == k) {
+      solution.emplace_back(std::vector<int>(current));
+    }
+
+    for (int i=idx; i<set.size(); i++) {
+      current.emplace_back(set[i]);
+      get_subsets(set, k, i+1, current, solution);
+      current.pop_back();
+    }
+  }
+
   std::vector<std::set<int>> get_subsets(std::set<int>& set, int k)
   {
-    int n = set.size();
-    std::vector<std::set<int>> results;
-
-    std::vector<std::set<int>> previous;
-    std::vector<std::set<int>> current;
-
-    previous.emplace_back(std::set<int>());
-    std::set<int> s = *(previous.begin());
-    results.emplace_back(s); // Add the first element
     std::vector<int> set_as_vector(set.begin(), set.end());
-
+    std::vector<int> current;
+    std::vector<std::vector<int>> result;
+    get_subsets(set_as_vector, k, 0, current, result);
+    std::vector<std::set<int>> result_as_vect_of_sets;
+    for (auto vect:result){
+      std::set<int> _temp(vect.begin(), vect.end());
+      result_as_vect_of_sets.emplace_back(_temp);
+    }
     /*for (int element: set_as_vector) {
       std::set<int> s; s.insert(element);
       results.emplace_back(s);
       previous.emplace_back(s);
     }*/
 
-
-    for (int i=1; i<k; i++)
+    /*
+    for (int i=0; i<k; i++)
     { // Everytime, current has at most 3 bits.
-      int second_counter = 0;
+      double second_counter = 0;
       for (std::set<int> s:previous) {
         int counter = 0;
         for (int element: set_as_vector) {
-          if (counter > second_counter+i) {
+          if (counter >= second_counter+i) {
             std::set<int> set_to_add = std::set<int>(s);
             set_to_add.insert(element);
             current.emplace_back(set_to_add);
           }
           counter++;
         }
-        second_counter++;
+
+        second_counter+=1.0/(i+1.0);
       }
       for (std::set<int> s:current) {
         results.push_back(s);
@@ -57,7 +68,8 @@ namespace Setutils
       previous = current;
       current = std::vector<std::set<int>>();
     }
-    return results;
+    */
+    return result_as_vect_of_sets;
   }
 
 }
@@ -263,6 +275,15 @@ namespace Graphutils
     return std::pair<bool, std::list<cell>::iterator>(false, std::list<cell>::iterator());
   }
 
+  void add_edge_without_repetition(graph& g, int vertex1, int vertex2, double weight)
+  {
+    std::list<cell>& adj1 = g.info.at(vertex1).second, & adj2 = g.info.at(vertex2).second;
+    for (std::list<cell>::iterator it=adj1.begin(); it!=adj1.end(); it++) {
+      if (it->vertex == vertex2) return;
+    }
+    add_edge(g, vertex1, vertex2, weight);
+  }
+
   std::pair<bool, double> get_weight(graph& g, int vertex1, int vertex2)
   {
     std::pair<bool, std::list<cell>::iterator> s = get_edge(g, vertex1, vertex2);
@@ -301,6 +322,15 @@ namespace Graphutils
     add_vertex(g, vertex2); // Same thing.
 
     add_edge(g, vertex1, vertex2, weight);
+  }
+
+    
+  void add_link_without_repetition(graph& g, int vertex1, int vertex2, double weight)
+  {
+    add_vertex(g, vertex1);
+    add_vertex(g, vertex2);
+
+    add_edge_without_repetition(g, vertex1, vertex2, weight);
   }
 
   void set_terminal(graph& g, int vertex, bool set = 1)
@@ -444,12 +474,12 @@ namespace Graphutils
     // Add all the vertices and eges
     for (__map_iterator it = min_distance_matrix.begin(); it != min_distance_matrix.end(); it++) {
       add_vertex(d, it->first);
+      if (g.info.at(it->first).first.terminal) {
+        set_terminal(d, it->first, true);
+      }
       for (std::map<int, double>::iterator jt = it->second.begin(); jt != it->second.end(); jt++) {
         if (jt->first > it->first) { // In order not to go through the same edge twice.
           add_vertex(d, jt->first);
-          if (g.info.at(jt->first).first.terminal) {
-            set_terminal(d, jt->first, true);
-          }
           add_edge(d, it->first, jt->first, jt->second); // Add the edge.
         }
       }
@@ -633,7 +663,7 @@ namespace Graphutils
     return path;
   };
 
-  std::pair<graph, graph> enumeration_steiner_tree(graph& g, graph& d)
+  std::pair<graph, graph> enumeration_steiner_tree(graph& g, graph& d, std::map<int,std::map<int,double>>& min_dist_matrix)
   {
     std::pair<std::set<int>, std::set<int>> KunionS = get_terminal_and_branching_set(g); // S union K discussed in the program.
     std::set<int>& K = KunionS.first, & S = KunionS.second; // Get K and S seperately
@@ -648,21 +678,47 @@ namespace Graphutils
     for (int subset_size = 0; subset_size <= number_of_terminals - 2; subset_size++) {
       std::vector<std::set<int>> possible_sets = Setutils::get_subsets(S, subset_size);
       for (std::set<int> subs : possible_sets) { // Go through all the listed subsets of size subset_size
-        // subs is a possible subset.
-        std::set<int> KunionSubset(K); KunionSubset.merge(subs); // Only C++17 functionality used.
-        std::set<int>::iterator it = KunionSubset.begin();
-        while (it != KunionSubset.end()) {
-          graph restricted_copy = restrict_graph_copy(d, KunionSubset); // restricts D to the terminals and the subset of branching
-          graph min_span_tree = primm_mst(restricted_copy);
-          double cost_of_tree = get_graph_cost(min_span_tree);
-          if ((coust_min_span_tree_in_d < 0) || cost_of_tree < coust_min_span_tree_in_d) {
-            steiner_min_tree_in_d = min_span_tree;
+        /*
+        for (auto v: subs) {
+          for (auto m: v) {
+            std::cout << m << "-";
           }
-          it++;
+          std::cout << std::endl;
+        }
+        */
+        // subs is a possible subset.
+        std::set<int> KunionSubset;
+        std::set<int> copy_of_K(K);
+        KunionSubset.merge(copy_of_K);
+        KunionSubset.merge(subs); // Only C++17 functionality used.
+        std::set<int>::iterator it = KunionSubset.begin();
+        graph restricted_copy = restrict_graph_copy(d, KunionSubset); // restricts D to the terminals and the subset of branching
+        graph min_span_tree = primm_mst(restricted_copy);
+        double cost_of_tree = get_graph_cost(min_span_tree);
+        if ((coust_min_span_tree_in_d < 0) || (cost_of_tree < coust_min_span_tree_in_d)) {
+          steiner_min_tree_in_d = min_span_tree;
+          coust_min_span_tree_in_d = cost_of_tree;
         }
       }
     }
 
+    for (std::map<int, std::pair<label, std::list<cell>>>::iterator it=steiner_min_tree_in_d.info.begin(); it!=steiner_min_tree_in_d.info.end(); it++){
+      std::list<cell>& adj = it->second.second; // Adjacency list of the point
+      if (it->second.first.terminal) {
+        add_vertex(steiner_min_tree_in_g, it->first);
+        set_terminal(steiner_min_tree_in_g, it->first);
+      }
+      for (std::list<cell>::iterator vt=adj.begin(); vt!=adj.end(); vt++) {
+        std::list<std::pair<int, double>> path = shortest_path(g, min_dist_matrix, it->first, vt->vertex);
+        int current_vertex = it->first;
+        add_vertex(steiner_min_tree_in_g, current_vertex);
+        for (std::pair<int, double>next : path) { // Add the intermediate paths
+          add_vertex(steiner_min_tree_in_g, next.first);
+          add_edge_without_repetition(steiner_min_tree_in_g, current_vertex, next.first, next.second);
+          current_vertex = next.first;
+        }
+      }
+    }
 
     // TODO: Add the part where I calculate the inverse tree in G from the tree in D. Missing.
     return std::pair<graph, graph>(steiner_min_tree_in_g, steiner_min_tree_in_d);

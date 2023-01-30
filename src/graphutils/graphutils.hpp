@@ -7,7 +7,7 @@
 #include <fstream>
 
 namespace Setutils {
-	/// @brief Finds all subsets of size less than or equal to k of set s given its size n.
+	/// @brief Finds all subsets of size equal to k of set s given its size n.
 	/// @param set the set from which we'll get the subsets
 	/// @param n The number of elemenst in s
 	/// @param k The maximum size of the subsets to find
@@ -87,6 +87,13 @@ namespace Graphutils {
 	/// @param weight Weight between both vertices.
 	void add_edge(graph& g, int vertex1, int vertex2, double weight);
 
+	/// @brief Adds the edge if it does not exist yet.
+	/// @param g Graph g
+	/// @param vertex1 First vertex
+	/// @param vertex2 Second vertex
+	/// @param weight Total weight
+	void add_edge_without_repetition(graph& g, int vertex1, int vertex2, double weight);
+
 	/// @brief Gets the cell link from vertex1 to vertex2
 	/// @param g Graph
 	/// @param vertex1 First vertex
@@ -119,6 +126,13 @@ namespace Graphutils {
 	/// @param vertex2 Vertex 2
 	/// @param weight Weight
 	void add_link(graph& g, int vertex1, int vertex2, double weight);
+
+	/// @brief Adds the vertices if missing, and the edge if not existant.
+	/// @param g Graph
+	/// @param vertex1 Vertex 1
+	/// @param vertex2 Vertex 2
+	/// @param weight Weight
+	void add_link_without_repetition(graph& g, int vertex1, int vertex2, double weight);
 
 	/// @brief Sets the vertex as a terminal (or non terminal) (part of K) in the graph
 	/// @param g Graph
@@ -203,7 +217,14 @@ namespace Graphutils {
 	/// @param g Original Graph
 	/// @param d Minimum distance grance
 	/// @return std::pair<graph1, graph2> with graph1 being the steiner minimal tree in g, and graph2 being the steiner minimal tree in d.
-	std::pair<graph, graph> enumeration_steiner_tree(graph& g, graph& d);
+	std::pair<graph, graph> enumeration_steiner_tree(graph& g, graph& d, std::map<int,std::map<int,double>>& min_dist_matrix);
+
+	/// @brief Returns the graph corresponding Steiner tree in G given the one in the minimum distance matrix
+	/// @param g Original graph
+	/// @param steiner_in_d The steiner tree graph in D.
+	/// @param min_dist_matrix Minimum distance matrix
+	/// @return The steiner tree in G
+	graph min_in_d_to_g(graph& g, graph& steiner_in_d, std::map<int,std::map<int,double>>& min_dist_matrix);
 
 	/// @brief Uses the heuristic method to calculate the steiner Tree.
 	/// @param g Graph g

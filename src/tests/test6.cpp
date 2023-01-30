@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	std::cout << "Using scenario 6v2" << std::endl;
 	// Attempt to read a file and output the corresponding graph
 
-	std::ifstream myfile("../../../scenarios/scenario6v2.txt");
+	std::ifstream myfile("../../../scenarios/scenario5.txt");
 	graph g = fstream_graph(myfile);
 	/*graph g = empty_graph(); //fstream_graph(myfile);
 	add_vertices(g, 7);
@@ -77,14 +77,15 @@ int main(int argc, char *argv[])
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 
-	/*
+	
 	std::cout << "Calculating the minimum steiner tree in D  using enumeration" << std::endl;
 	start_c = clock();
-	std::pair<graph,graph> result = enumeration_steiner_tree(g, min_dist_graph);
+	std::pair<graph,graph> result = enumeration_steiner_tree(g, min_dist_graph, min_matrix);
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
-	*/
-	//std::cout << result.second << std::endl;
+
+	std::cout << "Cost of tree found with enumeration : " << get_graph_cost(result.first) << std::endl;
+	std::cout << "The tree" << result.first << std::endl;
 
 	std::cout << "Calculating the shortest path between 0 and 6 (for example)" << std::endl;
 	std::list<std::pair<int,double>> path =  shortest_path(g, min_matrix, 0, 4);
@@ -107,7 +108,6 @@ int main(int argc, char *argv[])
 	//std::cout << heuristic_steiner_tree_algo_1;
 	std::cout << "Cost of the graph : " << get_graph_cost(heuristic_steiner_tree_algo_1) << std::endl;
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
-
 
 	return 0;
 }
