@@ -1,9 +1,11 @@
 #include "graphutils.hpp"
 #include "assert.h"
 
+#include <limits>
 #include <queue>
 #include <cmath>
 #include <algorithm> // For std::set_union.
+#include <bits/stdc++.h>
 //#include <bitset>
 
 // For now this print implementation does not show the label. This can be easily modified later.
@@ -724,6 +726,109 @@ namespace Graphutils
     return std::pair<graph, graph>(steiner_min_tree_in_g, steiner_min_tree_in_d);
   }
 
+bool compare_size_of_subsets(std::pair<int,int> x,std::pair<int,int> y){
+  return x.second < y.second;
+}
+
+
+std::vector<std::pair<int,int>> sorted_set_int(int n){
+  if (n == 0) return std::vector<std::pair<int,int>>(1,std::make_pair(0,0));
+  std::vector<std::pair<int,int>> set;
+  int count;
+  int number;
+  for(int i = 0;i != ((1 << n)) ;i++){
+    number = i;
+    count = 0;
+    while (number >0){
+      count++;
+      number = number & (number-1);
+    }
+    set.push_back(std::pair<int,int>(i,count));
+  }
+  std::sort(set.begin(),set.end(),compare_size_of_subsets);
+  return set;  
+}
+
+std::set<int> decode_set(std::set<int> super_set,int number){
+  //transform a subset from binary representation to a set
+  std::set<int> set;
+  int k = super_set.size();
+  int count ;
+  auto it = super_set.begin();
+  for(int i =0;i<k;i++,it++){
+    if((number & 1 << i) != 0){
+      set.emplace(*it);
+    }
+  }
+  return set;
+}
+
+int encode_set(std::set<int> set, int k){
+  int number=0;
+  for(auto i:set){
+    number += 1 << i;
+  }
+  return number;
+}
+
+
+double dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix){
+  std::set<int> K = get_terminals(g);
+  std::set<int> V = get_set_of_all_vertices(g);
+  int k = K.size();
+  int n = V.size();
+  // Setting the biggest possible double as infinity
+  double infty = std::numeric_limits<double>::max();
+  std::cout<<"i am in "<<std::endl;
+  std::set<int> set;
+  int first_subset,second_subset;
+  double min_u,min_v;
+  std::cout<<"Generating sorted_sets"<<std::endl;
+  //We initialize an array of arrays of integers sorted according to cardinality
+  std::vector<std::vector<std::pair<int,int>>> sorted_subsets;
+  for(int i=0;i<=k;i++){
+    std::cout<<"Generating sorted_sets"<<i<<std::endl;
+    sorted_subsets.push_back(sorted_set_int(i));
+  }
+  //Initiliazing array that contains the costs of the min steiner tree of a subset of K and a vertex v 
+  std::vector<std::vector<double>> ST(1<<k,std::vector<double>(n,infty));
+  
+  auto it=sorted_subsets[k].begin();
+  std::fill(ST[it->first].begin(),ST[it->first].end(),0);
+  it++;
+  for(;it->second==1 ;it++){
+    for(auto v:V){
+      ST[it->first][v] = min_dist_matrix.at(*(decode_set(K,it->first).begin())).at(v);
+    }
+  }
+
+  for(;it!= sorted_subsets[k].end();it++){
+    std::cout<<it->second<<std::endl;
+    set = decode_set(K,it->first);
+    for(auto v:V){
+      if(set.find(v)==set.end()){
+        min_v = infty; 
+        for(auto u:V){
+            min_u = infty;
+            auto sub_it = sorted_subsets[it->second].begin();sub_it++;
+            for(;sub_it->second <= (it->second)/2;sub_it++){
+
+              first_subset = encode_set(decode_set(set,sub_it->first),k);
+              second_subset = it->first - first_subset;
+              min_u = std::min(min_u,ST[first_subset][u]+ST[second_subset][u]);
+            }
+            min_v = std::min(min_v,min_u + min_dist_matrix.at(u).at(v));
+        }
+        ST[it->first][v] = min_v;
+      }
+      else{
+        ST[it->first][v] = ST[it->first-(1<<v)][v];
+      }
+    }
+  }
+ return ST[(1<<k)-1][0]; 
+}
+
   graph shortest_heuristic_path_algorithm(graph& g, std::map<int, std::map<int, double>>& min_dist_matrix)
   {
     std::set<int> K = get_terminals(g);
@@ -776,5 +881,8 @@ namespace Graphutils
     remove_leafs(T);
     return T;
   }
+
+
+
 
 }

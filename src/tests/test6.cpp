@@ -11,10 +11,10 @@ int main(int argc, char *argv[])
 {
 	clock_t start_c, end_c;
 	std::cout << "Test 4 PI_Project" << std::endl;
-	std::cout << "Using scenario 6v2" << std::endl;
+	std::cout << "Using scenario 3" << std::endl;
 	// Attempt to read a file and output the corresponding graph
 
-	std::ifstream myfile("../../../scenarios/scenario5.txt");
+	std::ifstream myfile("../../../scenarios/scenario6v2.txt");
 	graph g = fstream_graph(myfile);
 	/*graph g = empty_graph(); //fstream_graph(myfile);
 	add_vertices(g, 7);
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	set_terminal(g, 4, true);
 	set_terminal(g, 3, true);
 	*/
-
+	
 	std::cout << g << std::endl;
 	std::cout << "Preprocessing on g" << std::endl;
 	start_c = clock();
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 	std::cout << "The minimum distance matrix :" << std::endl;
 	//std::cout << min_matrix << std::endl;
-
+	
 	std::cout << "Removing edges longer than corresponding min_distance" << std::endl;
 	start_c = clock();
 	edgs_rmvd = optimize_edge_with_min_distance_matrix(g, min_matrix);
@@ -77,16 +77,16 @@ int main(int argc, char *argv[])
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 
-	
+    /*
 	std::cout << "Calculating the minimum steiner tree in D  using enumeration" << std::endl;
 	start_c = clock();
 	std::pair<graph,graph> result = enumeration_steiner_tree(g, min_dist_graph, min_matrix);
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
-
+	
 	std::cout << "Cost of tree found with enumeration : " << get_graph_cost(result.first) << std::endl;
 	std::cout << "The tree" << result.first << std::endl;
-
+	*/
 	std::cout << "Calculating the shortest path between 0 and 6 (for example)" << std::endl;
 	std::list<std::pair<int,double>> path =  shortest_path(g, min_matrix, 0, 4);
 	for (auto v:path){
@@ -108,6 +108,17 @@ int main(int argc, char *argv[])
 	//std::cout << heuristic_steiner_tree_algo_1;
 	std::cout << "Cost of the graph : " << get_graph_cost(heuristic_steiner_tree_algo_1) << std::endl;
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
-
+	std::cout<<"Calculating steiner minimal Tree using the dreyfus wagner algorithm"<<std::endl;
+	start_c = clock();
+	double smt = dreyfus_wagner_algorithm(g,min_matrix);
+	end_c = clock();
+	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
+	std::cout<<"The cost of the graph is" << smt<<std::endl;
+	//std::cout<<"The size of the set is :"<< set.size()<<std::endl;
+	/*for(auto it:set){
+		std::cout<<it.first<<","<<it.second<< std::endl;
+	}*/
+	//std::cout<<encode_set(set,5)<<std::endl;
+	
 	return 0;
 }

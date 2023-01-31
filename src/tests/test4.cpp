@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	//std::cout << g;
 	std::cout << "(Removed " << vrtx_rmvd << " vertices and " << vrtx_rmvd+edgs_rmvd << " edges)" << std::endl;
 	
-	std::cout << "Creating min_distance matrix"
+	std::cout << "Creating min_distance matrix";
 	start_c = clock();
 	std::map<int, std::map<int, double>> min_matrix = min_distance(g);
 	end_c = clock();

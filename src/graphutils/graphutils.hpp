@@ -239,6 +239,29 @@ namespace Graphutils {
 	/// @return Approximation of the Steiner minimal Tree
 	graph distance_network_heuristic_algorithm(graph& g, graph& min_dist_graph, std::map<int, std::map<int, double>>& min_dist_matrix);
 
+	/// @brief Dreyfus_Wagner algorithm
+	/// @param g Graph g
+	/// @param min_dist_matrix Corresponding minimum distance matrix
+	/// @return Exact computation of the Steiner minimal Tree	
+	double dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix);
+
+	/// @brief Allows to sort integers from 0 to 2^(n-1) sorted along the number of 1's
+	/// @param n integer
+	/// @return set 
+	std::vector<std::pair<int,int>> sorted_set_int(int n);
+
+	/// @brief Allows to convert an integer to a set
+	/// @param super_set the bigger set sorted
+	/// @param number number representation
+	/// @return set representation
+	std::set<int> decode_set(std::set<int> super_set,int number);
+
+	/// @brief Allows to convert a set to an integer
+	/// @param set subset
+	/// @param k number of elements in the superset
+	/// @return integer representation.
+	int encode_set(std::set<int> set, int k);
+
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
 	/// @param m The graph to print
@@ -250,4 +273,5 @@ namespace Graphutils {
 	/// @param min_matrix The matrix in question
 	/// @return Output stream.
 	std::ostream& operator<<(std::ostream& os, std::map<int, std::map<int, double>> const& min_matrix);
+
 }
