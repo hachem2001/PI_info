@@ -16,14 +16,14 @@ namespace Setutils
     return w; // If the input is 000111, the result is 001011. Then 001101 then 001110 ... Useful bit operation.
   }*/
 
-  void get_subsets(std::vector<int>& set, int k, int idx, std::vector<int>& current, std::vector<std::vector<int>>& solution){
+  void get_subsets_rec(std::vector<int>& set, int k, int idx, std::vector<int>& current, std::vector<std::vector<int>>& solution){
     if (current.size() == k) {
       solution.emplace_back(std::vector<int>(current));
     }
 
     for (int i=idx; i<set.size(); i++) {
       current.emplace_back(set[i]);
-      get_subsets(set, k, i+1, current, solution);
+      get_subsets_rec(set, k, i+1, current, solution);
       current.pop_back();
     }
   }
@@ -33,7 +33,7 @@ namespace Setutils
     std::vector<int> set_as_vector(set.begin(), set.end());
     std::vector<int> current;
     std::vector<std::vector<int>> result;
-    get_subsets(set_as_vector, k, 0, current, result);
+    get_subsets_rec(set_as_vector, k, 0, current, result);
     std::vector<std::set<int>> result_as_vect_of_sets;
     for (auto vect:result){
       std::set<int> _temp(vect.begin(), vect.end());

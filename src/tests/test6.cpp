@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 	std::cout << "Using scenario 6v2" << std::endl;
 	// Attempt to read a file and output the corresponding graph
 
-	std::ifstream myfile("../../../scenarios/scenario5.txt");
+	std::ifstream myfile("../../../scenarios/scenario6v2.txt");
 	graph g = fstream_graph(myfile);
 	/*graph g = empty_graph(); //fstream_graph(myfile);
 	add_vertices(g, 7);
@@ -30,7 +30,9 @@ int main(int argc, char *argv[])
 	set_terminal(g, 4, true);
 	set_terminal(g, 3, true);
 	*/
-
+	for (int i=2; i<=50; i++)
+		set_terminal(g, i, false);
+	
 	std::cout << g << std::endl;
 	std::cout << "Preprocessing on g" << std::endl;
 	start_c = clock();
@@ -85,7 +87,7 @@ int main(int argc, char *argv[])
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 
 	std::cout << "Cost of tree found with enumeration : " << get_graph_cost(result.first) << std::endl;
-	std::cout << "The tree" << result.first << std::endl;
+	//std::cout << "The tree" << std::endl << result.first << std::endl;
 
 	std::cout << "Calculating the shortest path between 0 and 6 (for example)" << std::endl;
 	std::list<std::pair<int,double>> path =  shortest_path(g, min_matrix, 0, 4);
