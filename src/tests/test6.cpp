@@ -15,7 +15,11 @@ int main(int argc, char *argv[])
 	// Attempt to read a file and output the corresponding graph
 
 	std::ifstream myfile("../../../scenarios/scenario6v2.txt");
-	graph g = fstream_graph(myfile);
+	//graph g = fstream_graph(myfile);
+	graph g = generate_random_graph(500,50,0.025);
+
+	//graph g = generate_random_graph(500,50,1/n);
+
 	/*graph g = empty_graph(); //fstream_graph(myfile);
 	add_vertices(g, 7);
 	add_edge(g, 0, 1, 9);
@@ -31,7 +35,7 @@ int main(int argc, char *argv[])
 	set_terminal(g, 3, true);
 	*/
 	
-	std::cout << g << std::endl;
+	//std::cout << g << std::endl;
 	std::cout << "Preprocessing on g" << std::endl;
 	start_c = clock();
 	int vrtx_rmvd = remove_leafs(g); // It's equal to the number of edges AND vertices removed when getting rid of leafs
@@ -42,7 +46,6 @@ int main(int argc, char *argv[])
 	start_c = clock();
 	std::pair<int, int> _temp = optimize_degree_2(g); vrtx_rmvd+=_temp.first;  edgs_rmvd+=_temp.second;
 	end_c = clock();
-
 
 	printf("It took %.2f µs\n", 1000000*double(end_c - start_c)/CLOCKS_PER_SEC);
 	std::cout << "(Removed " << vrtx_rmvd << " vertices and " << vrtx_rmvd+edgs_rmvd << " edges)" << std::endl;
@@ -108,12 +111,16 @@ int main(int argc, char *argv[])
 	//std::cout << heuristic_steiner_tree_algo_1;
 	std::cout << "Cost of the graph : " << get_graph_cost(heuristic_steiner_tree_algo_1) << std::endl;
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
+
+
+	/*
 	std::cout<<"Calculating steiner minimal Tree using the dreyfus wagner algorithm"<<std::endl;
 	start_c = clock();
 	double smt = dreyfus_wagner_algorithm(g,min_matrix);
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 	std::cout<<"The cost of the graph is" << smt<<std::endl;
+	*/
 	//std::cout<<"The size of the set is :"<< set.size()<<std::endl;
 	/*for(auto it:set){
 		std::cout<<it.first<<","<<it.second<< std::endl;

@@ -1,6 +1,5 @@
 #include <iostream>
 #include "graphutils.hpp"
-
 using namespace Graphutils;
 // Main
 int main(int argc, char *argv[])
