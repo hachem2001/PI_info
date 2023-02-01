@@ -767,18 +767,16 @@ int encode_set(std::set<int> set, int k){
 }
 
 
-double dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix){
+graph dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix){
   std::set<int> K = get_terminals(g);
   std::set<int> V = get_set_of_all_vertices(g);
   int k = K.size();
   int n = V.size();
   // Setting the biggest possible double as infinity
   double infty = std::numeric_limits<double>::max();
-  std::cout<<"i am in "<<std::endl;
   std::set<int> set;
   int first_subset,second_subset;
   double min_u,min_v;
-  std::cout<<"Generating sorted_sets"<<std::endl;
   //We initialize an array of arrays of integers sorted according to cardinality
   std::vector<std::vector<std::pair<int,int>>> sorted_subsets = sorted_set_int(k);
   //Initiliazing array that contains the costs of the min steiner tree of a subset of K and a vertex v 
@@ -793,7 +791,7 @@ double dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& mi
     }
   }
 
-  for(;it->second< k-1;it++){
+  for(;it != sorted_subsets[k].end();it++){
 
     set = decode_set(K,it->first);
     for(auto v:V){
@@ -820,20 +818,15 @@ double dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& mi
       
     }
   }
-  set = decode_set(K,(1<<k)-2);
-  min_v = infty; 
-  for(auto u:V){
-      min_u = infty;
-      auto sub_it = sorted_subsets[k-1].begin();sub_it++;
-      for(;sub_it->second <= (k-1)/2;sub_it++){
-        first_subset = encode_set(decode_set(set,sub_it->first),k);
-        second_subset = (1<<k)-2 - first_subset;
-        min_u = std::min(min_u,ST[first_subset][u]+ST[second_subset][u]);
-      }
-      min_v = std::min(min_v,min_u + min_dist_matrix.at(u).at(0));
+  std::set<int> vertices;
+  vertices.emplace();
+  for(auto v:V){
+    if (ST[(1<<k)-1][v] == ST[(1<<k) -1][0]){
+      vertices.emplace(v);
+    }
   }
-  ST[(1<<k)-2][0] = min_v;
-  return ST[(1<<k)-2][0]; 
+  graph restriced_graph = restrict_graph_copy(g,vertices);
+  return primm_mst(restriced_graph);
 }
 
   graph shortest_heuristic_path_algorithm(graph& g, std::map<int, std::map<int, double>>& min_dist_matrix)
@@ -935,15 +928,12 @@ double dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& mi
   graph generate_random_graph(int n,int k,double delta){
     int N_max = 20;
     graph g;
-    for(int i = 0; i<N_max;i++){
+    while(true){
       g = generate_random_graph_bis(n,k,delta);
       if (is_connected(g,n)){
         return g;
       }
     }
-    std::cout << "Connected graph not found after 20 trials" << "The Returned graph is not connected!"<<std::endl;
-    std::cout << "Try to increase the number of points or the threshhold distance delta" <<std::endl;
-    return g;
   }
 
   void is_connected_bis(graph& g, std::set<int>& vertices, int it){

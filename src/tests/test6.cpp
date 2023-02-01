@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
 	// Attempt to read a file and output the corresponding graph
 
 	std::ifstream myfile("../../../scenarios/scenario6v2.txt");
-	//graph g = fstream_graph(myfile);
-	graph g = generate_random_graph(500,50,0.025);
+	graph g = fstream_graph(myfile);
+	//graph g = generate_random_graph(500,50,0.025);
 
 	//graph g = generate_random_graph(500,50,1/n);
 
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 	/*
 	std::cout<<"Calculating steiner minimal Tree using the dreyfus wagner algorithm"<<std::endl;
 	start_c = clock();
-	double smt = dreyfus_wagner_algorithm(g,min_matrix);
+	graph smt = dreyfus_wagner_algorithm(g,min_matrix);
 	end_c = clock();
 	printf("It took %.2f ms\n", 1000*double(end_c - start_c)/CLOCKS_PER_SEC);
 	std::cout<<"The cost of the graph is" << smt<<std::endl;

@@ -243,7 +243,7 @@ namespace Graphutils {
 	/// @param g Graph g
 	/// @param min_dist_matrix Corresponding minimum distance matrix
 	/// @return Exact computation of the Steiner minimal Tree	
-	double dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix);
+	graph dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix);
 
 	/// @brief Allows to sort integers from 0 to 2^(n-1) sorted along the number of 1's
 	/// @param n integer
