@@ -239,6 +239,65 @@ namespace Graphutils {
 	/// @return Approximation of the Steiner minimal Tree
 	graph distance_network_heuristic_algorithm(graph& g, graph& min_dist_graph, std::map<int, std::map<int, double>>& min_dist_matrix);
 
+	/// @brief Dreyfus_Wagner algorithm
+	/// @param g Graph g
+	/// @param min_dist_matrix Corresponding minimum distance matrix
+	/// @return Exact computation of the Steiner minimal Tree	
+	graph dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix);
+
+	/// @brief Allows to sort integers from 0 to 2^(n-1) sorted along the number of 1's
+	/// @param n integer
+	/// @return set 
+	std::vector<std::vector<std::pair<int,int>>> sorted_set_int(int n);
+
+	/// @brief Allows to convert an integer to a set
+	/// @param super_set the bigger set sorted
+	/// @param number number representation
+	/// @return set representation
+	std::set<int> decode_set(std::set<int> super_set,int number);
+
+	/// @brief Allows to convert a set to an integer
+	/// @param set subset
+	/// @param k number of elements in the superset
+	/// @return integer representation.
+	int encode_set(std::set<int> set, int k);
+
+
+	/// @brief Generates a random double between 0 and 1(inclusive)
+	/// @return random double
+	double random_float();
+
+
+	/// @brief Computes the euclidian distance between two 2d points
+	/// @param a first point
+	/// @param b second point
+	/// @return Distance as a double
+	double euclidian_distance(std::pair<int,int> a,std::pair<int,int> b);
+
+	/// @brief Generates a random graph of n vertices and k terminals where the edges depends on the euclidian distance between points and delta
+	/// @param n number of total vertices
+	/// @param k number of terminals
+	/// @return Random graph
+	graph generate_random_graph_bis(int n,int k,double delta);
+
+	/// @brief Generates a random connected graph of n vertices and k terminals if not possible after 10 trials returns a random graph
+	/// @param n number of total vertices
+	/// @param k number of terminals
+	/// @return Random graph
+	graph generate_random_graph(int n,int k,double delta);
+
+	/// @brief Recursively add connected elements
+	/// @param g graph
+	/// @param vertices set of vertices
+	/// @param it vertex to check from
+	void is_connected_bis(graph& g, std::set<int>& vertices, int it);
+
+	/// @brief Checks if a graph of n vertices is connected or not
+	/// @param n number of vertices in g
+	/// @param g graph
+	/// @return True if connected, false if not
+	bool is_connected(graph& g,int number_of_vertices);
+
 	/// @brief Allows to print the graph in a readable format (for std::cout for example)
 	/// @param os Output stream
 	/// @param m The graph to print
