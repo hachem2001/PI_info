@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 {
 	clock_t start_c, end_c;
 	std::cout << "Test 4 PI_Project" << std::endl;
-	std::cout << "Using scenario 6v2" << std::endl;
+	std::cout << "Statistical analysis" << std::endl;
 	// Attempt to read a file and output the corresponding graph
 
 	std::ifstream myfile("../../../scenarios/scenario6v2.txt");
@@ -30,8 +30,45 @@ int main(int argc, char *argv[])
 	set_terminal(g, 4, true);
 	set_terminal(g, 3, true);
 	*/
+<<<<<<< HEAD
 	for (int i=2; i<=50; i++)
 		set_terminal(g, i, false);
+=======
+
+	double cost_avg_shorest_path = 0;
+	double time_avg_shortest_path = 0;
+	double cost_avg_network_path  = 0;
+	double time_avg_network_path = 0;
+
+	for(int i=0;i<10;i++){
+		graph g = generate_random_graph(500,50,0.025);
+		int vrtx_rmvd = remove_leafs(g);
+		std::pair<int, int> _temp = optimize_degree_2(g);
+
+		std::map<int, std::map<int, double>> min_matrix = min_distance(g);
+		optimize_edge_with_min_distance_matrix(g, min_matrix);
+		graph min_dist_graph = min_distance_graph(g, min_matrix);
+
+		start_c = clock();
+		graph heuristic_steiner_tree_algo_2 = shortest_heuristic_path_algorithm(g, min_matrix);
+		end_c = clock();
+		
+		cost_avg_shorest_path += get_graph_cost(heuristic_steiner_tree_algo_2);
+		time_avg_shortest_path += 1000*double(end_c - start_c)/CLOCKS_PER_SEC;
+		start_c = clock();
+		graph heuristic_steiner_tree_algo_1 = distance_network_heuristic_algorithm(g, min_dist_graph, min_matrix);
+		end_c = clock();
+		cost_avg_network_path += get_graph_cost(heuristic_steiner_tree_algo_1);
+		time_avg_network_path += 1000*double(end_c - start_c)/CLOCKS_PER_SEC;
+	}
+
+	std::cout<< "Shortest path heuristic cost average time " << cost_avg_shorest_path/10. <<std::endl;
+	std::cout<< "Shortest path heuristic algo time average " << time_avg_shortest_path/10. <<std::endl;
+	std::cout<< "Network algo cost avg" << cost_avg_network_path/10. <<std::endl;
+	std::cout<< "Network algo time avg " << time_avg_network_path/10. <<std::endl;
+
+	return 0;
+>>>>>>> testing_drayfus
 	
 	std::cout << g << std::endl;
 	std::cout << "Preprocessing on g" << std::endl;

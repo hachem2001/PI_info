@@ -1,9 +1,11 @@
 #include "graphutils.hpp"
 #include "assert.h"
 
+#include <limits>
 #include <queue>
 #include <cmath>
 #include <algorithm> // For std::set_union.
+#include <bits/stdc++.h>
 //#include <bitset>
 
 // For now this print implementation does not show the label. This can be easily modified later.
@@ -671,22 +673,12 @@ namespace Graphutils
     graph steiner_min_tree_in_g = empty_graph(), steiner_min_tree_in_d = empty_graph();
     double coust_min_span_tree_in_d = -1;
 
-
     int number_of_terminals = K.size(); // We could use g or d too. Same thing.
     int number_of_branching_points = S.size();
 
     for (int subset_size = 0; subset_size <= number_of_terminals - 2; subset_size++) {
       std::vector<std::set<int>> possible_sets = Setutils::get_subsets(S, subset_size);
       for (std::set<int> subs : possible_sets) { // Go through all the listed subsets of size subset_size
-        /*
-        for (auto v: subs) {
-          for (auto m: v) {
-            std::cout << m << "-";
-          }
-          std::cout << std::endl;
-        }
-        */
-        // subs is a possible subset.
         std::set<int> KunionSubset;
         std::set<int> copy_of_K(K);
         KunionSubset.merge(copy_of_K);
@@ -723,6 +715,119 @@ namespace Graphutils
     // TODO: Add the part where I calculate the inverse tree in G from the tree in D. Missing.
     return std::pair<graph, graph>(steiner_min_tree_in_g, steiner_min_tree_in_d);
   }
+
+bool compare_size_of_subsets(std::pair<int,int> x,std::pair<int,int> y){
+  return x.second < y.second;
+}
+
+
+std::vector<std::vector<std::pair<int,int>>> sorted_set_int(int n){
+  std::vector<std::pair<int,int>> set;
+  std::vector<std::vector<std::pair<int,int>>> bigger_set;
+  int count;
+  int number;
+  for(int i = 0;i != ((1 << n)) ;i++){
+    number = i;
+    count = 0;
+    while (number >0){
+      count++;
+      number = number & (number-1);
+    }
+    set.push_back(std::pair<int,int>(i,count));
+  }
+  for(int i =0;i<=n;i++){
+    std::vector<std::pair<int,int>> part(set.begin(),set.begin()+(1<<i));
+    std::sort(part.begin(),part.end(),compare_size_of_subsets);
+    bigger_set.push_back(part);
+  }
+  return bigger_set;  
+}
+
+std::set<int> decode_set(std::set<int> super_set,int number){
+  //transform a subset from binary representation to a set
+  std::set<int> set;
+  int k = super_set.size();
+  int count ;
+  auto it = super_set.begin();
+  for(int i =0;i<k;i++,it++){
+    if((number & 1 << i) != 0){
+      set.emplace(*it);
+    }
+  }
+  return set;
+}
+
+int encode_set(std::set<int> set, int k){
+  //
+  int number=0;
+  for(auto i:set){
+    number += 1 << i;
+  }
+  return number;
+}
+
+
+graph dreyfus_wagner_algorithm(graph& g, std::map<int,std::map<int,double>>& min_dist_matrix){
+  std::set<int> K = get_terminals(g);
+  std::set<int> V = get_set_of_all_vertices(g);
+  int k = K.size();
+  int n = V.size();
+  // Setting the biggest possible double as infinity
+  double infty = std::numeric_limits<double>::max();
+  std::set<int> set;
+  int first_subset,second_subset;
+  double min_u,min_v;
+  //We initialize an array of arrays of integers sorted according to cardinality
+  std::vector<std::vector<std::pair<int,int>>> sorted_subsets = sorted_set_int(k);
+  //Initiliazing array that contains the costs of the min steiner tree of a subset of K and a vertex v 
+  std::vector<std::vector<double>> ST(1<<k,std::vector<double>(n,infty));
+  
+  auto it=sorted_subsets[k].begin();
+  std::fill(ST[it->first].begin(),ST[it->first].end(),0);
+  it++;
+  for(;it->second==1 ;it++){
+    for(auto v:V){
+      ST[it->first][v] = min_dist_matrix.at(*(decode_set(K,it->first).begin())).at(v);
+    }
+  }
+
+  for(;it != sorted_subsets[k].end();it++){
+
+    set = decode_set(K,it->first);
+    for(auto v:V){
+      if(v<k){
+        if((it->first & 1<<v )== 1){
+          ST[it->first][v] = ST[it->first-(1<<v)][v];
+          continue;
+        }
+      }
+      
+      min_v = infty; 
+      for(auto u:V){
+          min_u = infty;
+          auto sub_it = sorted_subsets[it->second].begin();sub_it++;
+          for(;sub_it->second <= (it->second)/2;sub_it++){
+
+            first_subset = encode_set(decode_set(set,sub_it->first),k);
+            second_subset = it->first - first_subset;
+            min_u = std::min(min_u,ST[first_subset][u]+ST[second_subset][u]);
+          }
+          min_v = std::min(min_v,min_u + min_dist_matrix.at(u).at(v));
+      }
+      ST[it->first][v] = min_v;
+      
+    }
+  }
+  std::set<int> vertices;
+  vertices.emplace();
+  for(auto v:V){
+    if (ST[(1<<k)-1][v] == ST[(1<<k) -1][0]){
+      vertices.emplace(v);
+    }
+  }
+  graph restriced_graph = restrict_graph_copy(g,vertices);
+  return primm_mst(restriced_graph);
+}
 
   graph shortest_heuristic_path_algorithm(graph& g, std::map<int, std::map<int, double>>& min_dist_matrix)
   {
@@ -776,5 +881,80 @@ namespace Graphutils
     remove_leafs(T);
     return T;
   }
+
+  double random_float()
+  {
+    double max_rand = 2147483647;
+    return std::rand() / max_rand;
+  }
+
+  double euclidian_distance(std::pair<double,double> a,std::pair<double,double> b){
+    return std::sqrt(std::pow(a.first-b.first,2)+std::pow(a.second-b.second,2));
+  }
+
+  graph generate_random_graph_bis(int n,int k,double delta){
+    std::srand(time(0));
+    graph g = empty_graph();
+    std::vector<std::pair<double,double>> points;
+    int v = 0;
+    for(;v<k;v++){
+      add_vertex(g,v);
+      set_terminal(g,v,true);
+      points.push_back(std::make_pair(random_float(),random_float()));
+    }
+    for(;v<n;v++){
+      add_vertex(g,v);
+      points.push_back(std::make_pair(random_float(),random_float()));
+    }
+    for(auto it=g.info.begin();it!=g.info.end();it++){
+      auto jt = it;jt++;
+      for(;jt != g.info.end();jt++){
+        double distance = euclidian_distance(points[it->first],points[jt->first]);
+        if(distance < delta){
+          add_edge(g,it->first,jt->first,1);
+        }
+        else if(distance < 2 * delta){
+          add_edge(g,it->first,jt->first,2);
+        }
+        else  if(distance < 3 * delta){
+          add_edge(g,it->first,jt->first,3);
+        }
+
+      }
+    }
+    return g;
+  }
+
+  graph generate_random_graph(int n,int k,double delta){
+    int N_max = 20;
+    graph g;
+    while(true){
+      g = generate_random_graph_bis(n,k,delta);
+      if (is_connected(g,n)){
+        return g;
+      }
+    }
+  }
+
+  void is_connected_bis(graph& g, std::set<int>& vertices, int it){
+    for(auto jt = g.info[it].second.begin();jt!= g.info[it].second.end();jt++){
+      if (vertices.find(jt->vertex) == vertices.end()){
+        vertices.emplace(jt->vertex);
+        is_connected_bis(g,vertices,jt->vertex);
+      }
+     }
+  }
+
+  bool is_connected(graph& g,int number_of_vertices){
+    int n = 0;
+    std::set<int> vertices;
+    vertices.emplace(0);
+    is_connected_bis(g,vertices,0);
+    n = vertices.size();
+    return (n == number_of_vertices);
+  }
+
+
+
 
 }
